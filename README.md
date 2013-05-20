@@ -1,4 +1,4 @@
-memory_city by @Jwaxo and @cburnell
+memory_city by @Jwaxo and @ChuckyB88
 
 An attempt at a procedural memory game using node.js
 
