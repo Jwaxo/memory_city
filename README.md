@@ -21,5 +21,10 @@ These are the various elements that will come into play. These aren't necessaril
     + Names
     + Lengths
     + Topography
+    + Items found in streets
+        - Cars
+        - Sign posts
+        - Trashcans
+        - Other Things
 * Topography
 * Questions
