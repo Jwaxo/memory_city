@@ -1,0 +1,3 @@
+[submodule "lib/modules/seedrandom"]
+	path = lib/modules/seedrandom
+	url = git://github.com/Jwaxo/seedrandom.git
