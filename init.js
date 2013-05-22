@@ -1,14 +1,16 @@
 //Basic Hello World to get at least SOMETHING in the repo that isn't a Readme.
 
 var http = require('http');
-var seedrandom_module = require('seedrandom');
+var express = require('express');
+var seedrandom_module = require('./lib/modules/seedrandom/seedrandom.js');
 
 Math.seedrandom('seed');
+var string = Math.random().toString();
 
-var server = http.createServer(function (request, response) {
-	response.writeHead(200);
-	response.write(Math.random());
-	response.end();
+server = express();
+
+server.get('/', function (request, response) {
+	response.send(string);
 });
 
 server.listen(8000);
