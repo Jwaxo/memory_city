@@ -58,22 +58,33 @@
 	$container.append(renderer.domElement);
 
 	// create the box's material
-	var boxMaterial = new THREE.MeshLambertMaterial(
+	var boxMaterial1 = new THREE.MeshLambertMaterial(
 	{
 	    color: 0xCC0000
 	});
 
+	var boxMaterial2 = new THREE.MeshLambertMaterial(
+	{
+	    color: 0x00CC00
+	});
+	
 	// set up the box vars
-	var xquest = 250, yquest = 160, zquest = 100;
-
+	var width1 = 250, height1 = 160, depth1 = 100;
+	var width2 = 200, height2 = 260, depth2 = 150;
 	// create a new mesh with box geometry -
 	// we will cover the boxMaterial next!
-	var box = new THREE.Mesh(
-	   new THREE.CubeGeometry(xquest, yquest, zquest),
-	   boxMaterial);
-
+	var box1 = new THREE.Mesh(
+	   new THREE.CubeGeometry(width1, height1, depth1),
+	   boxMaterial1);
+	box1.position.x=100;
 	// add the box to the scene
-	scene.add(box);
+	var box2 = new THREE.Mesh(
+	   new THREE.CubeGeometry(width2, height2, depth2),
+	   boxMaterial2);
+	box2.position.x=-150;
+	
+	scene.add(box2);
+	scene.add(box1);
 
 	// and the camera
 	scene.add(camera);
@@ -82,7 +93,7 @@
 	var pointLight = new THREE.PointLight( 0xFFFFFF );
 
 	// set its position
-	pointLight.position.x = 150;
+	pointLight.position.x = 250;
 	pointLight.position.y = 150;
 	pointLight.position.z = 200;
 
