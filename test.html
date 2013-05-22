@@ -48,30 +48,43 @@
 
 	// the camera starts at 0,0,0 so pull it back
 	camera.position.z = 300;
-
+	camera.position.y = 300;
+	camera.position.x = 300;
+	camera.lookAt( scene.position);
 	// start the renderer
 	renderer.setSize(WIDTH, HEIGHT);
 
 	// attach the render-supplied DOM element
 	$container.append(renderer.domElement);
 
-	// create the sphere's material
-	var sphereMaterial = new THREE.MeshLambertMaterial(
+	// create the box's material
+	var boxMaterial1 = new THREE.MeshLambertMaterial(
 	{
 	    color: 0xCC0000
 	});
 
-	// set up the sphere vars
-	var radius = 50, segments = 16, rings = 16;
-
-	// create a new mesh with sphere geometry -
-	// we will cover the sphereMaterial next!
-	var sphere = new THREE.Mesh(
-	   new THREE.SphereGeometry(radius, segments, rings),
-	   sphereMaterial);
-
-	// add the sphere to the scene
-	scene.add(sphere);
+	var boxMaterial2 = new THREE.MeshLambertMaterial(
+	{
+	    color: 0x00CC00
+	});
+	
+	// set up the box vars
+	var width1 = 250, height1 = 160, depth1 = 100;
+	var width2 = 200, height2 = 260, depth2 = 150;
+	// create a new mesh with box geometry -
+	// we will cover the boxMaterial next!
+	var box1 = new THREE.Mesh(
+	   new THREE.CubeGeometry(width1, height1, depth1),
+	   boxMaterial1);
+	box1.position.x=100;
+	// add the box to the scene
+	var box2 = new THREE.Mesh(
+	   new THREE.CubeGeometry(width2, height2, depth2),
+	   boxMaterial2);
+	box2.position.x=-150;
+	
+	scene.add(box2);
+	scene.add(box1);
 
 	// and the camera
 	scene.add(camera);
@@ -80,9 +93,9 @@
 	var pointLight = new THREE.PointLight( 0xFFFFFF );
 
 	// set its position
-	pointLight.position.x = 10;
-	pointLight.position.y = 50;
-	pointLight.position.z = 130;
+	pointLight.position.x = 250;
+	pointLight.position.y = 150;
+	pointLight.position.z = 200;
 
 	// add to the scene
 	scene.add(pointLight);
