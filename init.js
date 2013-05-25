@@ -6,10 +6,10 @@ var server = require('./lib/modules/server_init').createServer();
 var seedrandom_module = require('./lib/modules/seedrandom/seedrandom.js');
 
 Math.seedrandom('seed');
-var string = Math.random().toString();
+var body = Math.random().toString();
 
 server.get('/', function (request, response) {
-	response.send(string);
+	response.render('index.html', {'title': 'Memory City'});
 });
 
 server.listen(8000);
