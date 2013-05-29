@@ -2,14 +2,26 @@
 
 var http = require('http');
 var server = require('./lib/modules/server_init').createServer();
+var express = require('express');
 
-var seedrandom_module = require('./lib/modules/seedrandom/seedrandom.js');
+server.configure(function() {
+	//Begin setting up the server
+	server.set('title', 'Memory City');
+	server.set('views', __dirname + '/views');
+	server.set('view engine', 'ejs');
+	server.engine('.html', require('ejs').renderFile);
+	server.use(express.bodyParser());
+});
 
-Math.seedrandom('seed');
-var body = Math.random().toString();
+var body = require('./lib/modules/map_generator').createMap(seed);
+var views_var = server.get('views');
 
 server.get('/', function (request, response) {
-	response.render('index.html', {'title': 'Memory City'});
+	console.log("Rendering view index.html at " + views_var);
+	response.render('index.html', {
+		'title': 'Memory City',
+		'body': body
+	});
 });
 
 server.listen(8000);

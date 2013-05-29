@@ -1,0 +1,7 @@
+var mapCreate = function(seed) {
+	Math.seedrandom(seed);
+	
+	return Math.random().toString();
+};
+
+exports.mapCreate = mapCreate;
