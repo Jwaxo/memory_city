@@ -2,14 +2,19 @@
 <html>
   <head>
     <title><%= title %></title>
+	
+	<link href="/stylesheets/style.css" rel="stylesheet">
+	
   </head>
-  <body>	
-	<% body.map.grid.forEach(function(row) { %>
-		<div class="row">
-		<% row.forEach(function(tile) { %>
-			<div class="tile"><%= tile %></div>
+  <body>
+	<div class="grid">
+		<% body.map.grid.forEach(function(row) { %>
+			<div class="row">
+			<% row.forEach(function(tile) { %>
+				<div class="tile"><%= tile %></div>
+			<% }); %>
+			</div>
 		<% }); %>
-		</div>
-	<% }); %>
+	</div>
   </body>
 </html>

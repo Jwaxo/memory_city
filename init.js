@@ -10,6 +10,7 @@ server.configure(function() {
 	server.set('views', __dirname + '/views');
 	server.set('view engine', 'ejs');
 	server.engine('.html', require('ejs').renderFile);
+	server.use(express.static(__dirname + '/public'));
 	server.use(express.bodyParser());
 });
 
