@@ -4,12 +4,12 @@
     <title><%= title %></title>
   </head>
   <body>	
-	<% body.map.forEach(function() { %>
+	<% body.map.grid.forEach(function(row) { %>
 		<div class="row">
-		<% this.forEach(function() { %>
-			<div class="tile"><% this %></div>
-		<% } %>
+		<% row.forEach(function(tile) { %>
+			<div class="tile"><%= tile %></div>
+		<% }); %>
 		</div>
-	<% } %>
+	<% }); %>
   </body>
 </html>
