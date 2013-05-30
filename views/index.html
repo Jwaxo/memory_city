@@ -9,9 +9,9 @@
   <body>
 	<div class="grid">
 		<% body.map.grid.forEach(function(row) { %>
-			<div class="row">
+			<div class="column">
 			<% row.forEach(function(tile) { %>
-				<div class="tile"><%= tile %></div>
+				<div class="tile"><div class="value"><%= tile.value %></div><span class="coordinates"><%= tile.x %>,<%= tile.y %></span></div>
 			<% }); %>
 			</div>
 		<% }); %>

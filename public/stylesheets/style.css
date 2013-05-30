@@ -4,16 +4,14 @@ by @Jwaxo */
 /* Basic Grid Setup */
 .grid  {
 	position: relative;
-	width: 1100px;
-	height: 1100px;
 }
 
-.grid .row {
+.grid .column {
 	position: relative;
+	float: left;
 }
 
 .grid .tile{
-	float: left;
 	width: 98px;
 	height: 98px;
 	border: 1px solid #000;
