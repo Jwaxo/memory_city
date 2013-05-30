@@ -13,7 +13,9 @@ server.configure(function() {
 	server.use(express.bodyParser());
 });
 
-var body = require('./lib/modules/map_generator').createMap(seed);
+var body = {
+	map : require('./lib/modules/map_generator').createMap()
+};
 var views_var = server.get('views');
 
 server.get('/', function (request, response) {

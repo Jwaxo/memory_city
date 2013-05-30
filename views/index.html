@@ -4,6 +4,12 @@
     <title><%= title %></title>
   </head>
   <body>	
-	<%- body %>
+	<% body.map.forEach(function() { %>
+		<div class="row">
+		<% this.forEach(function() { %>
+			<div class="tile"><% this %></div>
+		<% } %>
+		</div>
+	<% } %>
   </body>
 </html>
