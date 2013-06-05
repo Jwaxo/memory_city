@@ -1,7 +1,7 @@
 //Basic Hello World to get at least SOMETHING in the repo that isn't a Readme.
 
 var http = require('http');
-var server = require('./lib/modules/server_init').createServer();
+var server = require('./lib/modules/memory_city/server_init').createServer();
 var express = require('express');
 
 server.configure(function() {
@@ -15,7 +15,7 @@ server.configure(function() {
 });
 
 var body = {
-	map : require('./lib/modules/map_generator').createMap()
+	map : require('./lib/modules/memory_city/map_generator').createMap()
 };
 var views_var = server.get('views');
 
