@@ -21,16 +21,16 @@ module.exports = function() {
 		//separately because the objects property of the map needs to reference it.
 		
 		var map = {
-			grid : grid,
-			objects : grid.createRoots(config.map.x, config.map.y, config.map.roots, config.map.root_type)
+			'grid' : grid.grid,
+			'objects' : grid.createRoots(config.map.x, config.map.y, config.map.roots, config.map.root_type)
 		};
 				
 		return map;
 	};
-}
+}();
 
 function Grid(x, y) {
-	var grid = [];
+	this.grid = [];
 	var max_x = x*2+1;
 	var max_y = y*2+1;
 	//Since JS (and, presumably, most languages) can't deal with negative
@@ -38,9 +38,9 @@ function Grid(x, y) {
 	//for use in our loops.
 	
 	for(var i = 0; i < max_x; i++) {
-		grid[i] = [];
+		this.grid[i] = [];
 		for(var j = 0; j < max_y; j++) {
-			grid[i][j] = {
+			this.grid[i][j] = {
 				x : (i-x),
 				y : (j-y)
 				//Then when we assign the "real" coords, we can use the negative
@@ -48,30 +48,27 @@ function Grid(x, y) {
 			};
 		}
 	}
-	return function(roots, root_type) {
 	
-	};
-	
-	function createRoots(roots, root_type) {
+	this.createRoots = function(roots, root_type) {
 		var objects = [];
 		for(var i = 0; i < roots; i++) {
 			console.log('Generating root.');
-			new_coords = generateCoords(x, y, grid);
+			new_coords = this.generateCoords(x, y);
 			objects[i] = {
 				coords: new_coords,
-				grid_ref: grid[(new_coords.x)][(new_coords.y)],
+				grid_ref: this.grid[(new_coords.x)][(new_coords.y)],
 				type: root_type
 			};
-			this[new_coords.x][new_coords.y].object = objects[i];
+			this.grid[new_coords.x][new_coords.y].object = objects[i];
 		}
 	}
 	
-	function generateCoords(x, y) {
+	this.generateCoords = function(x, y) {
 		var possible_x = Math.floor(Math.random()*(x*2));
 		var possible_y = Math.floor(Math.random()*(y*2));
-		if(this[possible_x][possible_y].object) {
+		if(this.grid[possible_x][possible_y].object) {
 			console.log('Coordinate location occupied, re-generating.');
-			generateCoords(x, y, this);
+			generateCoords(x, y);
 		} else {
 			console.log('Generated coordinate: ' + (possible_x-x).toString() + ',' + (possible_y-y).toString());
 			coords = {
