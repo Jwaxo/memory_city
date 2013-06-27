@@ -1,6 +1,5 @@
-var createServer = function() {
-	var express = require('express');
-	
+var createServer = function(express) {
+
 	var server = express();
 	
 	server.configure(function() {

@@ -1,8 +1,12 @@
-//Basic Hello World to get at least SOMETHING in the repo that isn't a Readme.
+var config = require('./config').values;
+
+console.log("Config loaded with seed '" + config.seed + "'.");
 
 var http = require('http');
-var server = require('./lib/modules/memory_city/server_init').createServer();
 var express = require('express');
+var server = require('./server_init').createServer(express);
+
+var map_generator = require('./index');
 
 server.configure(function() {
 	//Begin setting up the server
@@ -14,8 +18,10 @@ server.configure(function() {
 	server.use(express.bodyParser());
 });
 
+var map = map_generator(config);
+
 var body = {
-	map : require('./lib/modules/memory_city/map_generator').createMap()
+	'map' : map
 };
 var views_var = server.get('views');
 
