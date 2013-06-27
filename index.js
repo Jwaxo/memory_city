@@ -1,21 +1,18 @@
 module.exports = function() {
 
-	var seedrandom_module = require('./lib/modules/seedrandom/seedrandom.js');
+	var seedrandom = require('seed-random');
 
 	console.log('Map generator ready.');
 	
 	return function(config) {
 		console.log('Config received');
-		var seed = "";
 		if(config.seed) {
-			seed = config.seed;
-			console.log('Generating map from seed "' + seed + '".');
-
+			seedrandom(config.seed, true); //If a seed is set, replace Math.random()
+			console.log('Generating map from seed "' + config.seed + '".');
 		} else {
-			seed = Math.random;
+			seedrandom('', true); //If not, we still need a seed, so make one
 			console.log('Generating map from random seed.');
 		}
-		Math.seedrandom(seed); //Set our seed using seedrandom.js
 		
 		var grid = new Grid(config.map.x, config.map.y); //We create the grid
 		//separately because the objects property of the map needs to reference it.
