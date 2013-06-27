@@ -49,7 +49,7 @@ function Grid(x, y) {
 		}
 	}
 	
-	this.createRoots = function(roots, root_type) {
+	this.createRoots = function(x, y, roots, root_type) {
 		var objects = [];
 		for(var i = 0; i < roots; i++) {
 			console.log('Generating root.');
