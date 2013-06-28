@@ -1,6 +1,14 @@
 module.exports = function() {
 
 	var seedrandom = require('seed-random');
+	var fs = require('fs');
+	
+	var nodeTree = new NodeTree();
+	var nodes = fs.readdirSync('./lib/nodes');
+	
+	for (var i=0;i<nodes.length;i++) {
+		nodeTree.buildBranch(nodes[i]);
+	}
 
 	console.log('Map generator ready.');
 	
@@ -25,6 +33,37 @@ module.exports = function() {
 		return map;
 	};
 }();
+
+function NodeTree() {
+
+	this.tree = []; //We keep our complete, exclusive heirarchy here
+	this.branches = []; //Which references our recursive, unsorted node types
+		
+	this.buildBranch = function(node) {
+	//This function finds a node type, looks to see if it has a prototype,
+	//and calls the parents recursively to build a "branch"
+		var parsedNode = require('./lib/nodes/' + node );
+		
+		var type = parsedNode.type;
+		
+		console.log("Creating new branch '" + type + "'.");
+		
+		this.branches[type] = parsedNode;
+		this.branches[type].children = {};
+		
+		if (parsedNode.hasOwnProperty("parentType")) {
+			if (this.branches[parsedNode.parentType] == undefined) {
+				this.buildBranch(parsedNode.parentType + ".json");
+			}
+			this.branches[parsedNode.parentType].children[type] = parsedNode;
+			console.log("Built branch '" + this.branches[type].type + "' with parent '" + this.branches[parsedNode.parentType].type + "'.");
+		} else {
+			this.tree[type] = this.branches[type];
+			console.log("Built trunk with '" + this.tree[type].type + "'.");
+		}
+
+	}
+}
 
 function Grid(x, y) {
 	this.grid = [];
