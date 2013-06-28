@@ -1,0 +1,5 @@
+{
+	type : "school",
+	parentType : "building",
+	color : "00FFFF"
+}

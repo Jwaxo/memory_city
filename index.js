@@ -47,6 +47,8 @@ function Grid(x, y) {
 	}
 	
 	this.createRoots = function(x, y, roots, root_type) {
+		//Roots are what I call the "basic" building blocks, mostly just another
+		//variable of influence one can have when creating a new map. 
 		var objects = [];
 		for(var i = 0; i < roots; i++) {
 			console.log('Generating root.');
@@ -54,9 +56,10 @@ function Grid(x, y) {
 			objects[i] = {
 				coords: new_coords,
 				grid_ref: this.grid[(new_coords.x)][(new_coords.y)],
-				type: root_type
+				node: require('./lib/nodes.js').createNode(root_type)
 			};
 			this.grid[new_coords.x][new_coords.y].object = objects[i];
+			
 		}
 	}
 	
