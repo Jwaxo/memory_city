@@ -9,7 +9,7 @@ module.exports = function() {
 	for (var i=0;i<nodes.length;i++) {
 		nodeTree.buildBranch(nodes[i]);
 	}
-
+	console.log("Node tree built as " + nodeTree.tree['building'].children['school'].type);
 	console.log('Map generator ready.');
 	
 	return function(config) {
@@ -23,11 +23,11 @@ module.exports = function() {
 		}
 		
 		var grid = new Grid(config.map.x, config.map.y); //We create the grid
-		//separately because the objects property of the map needs to reference it.
+		//separately because the nodes property of the map needs to reference it.
 		
 		var map = {
 			'grid' : grid.grid,
-			'objects' : grid.createRoots(config.map.x, config.map.y, config.map.roots, config.map.root_type)
+			'nodes' : grid.createRoots(config, nodeTree)
 		};
 				
 		return map;
@@ -63,6 +63,14 @@ function NodeTree() {
 		}
 
 	}
+    this.createNode = function(type) {
+	//This function finds a node type, looks to see if it has a prototype,
+	//and calls the parents recursively
+	
+		var parsedNode = this.branches[type];
+		
+		return parsedNode;
+    }
 }
 
 function Grid(x, y) {
@@ -85,19 +93,23 @@ function Grid(x, y) {
 		}
 	}
 	
-	this.createRoots = function(x, y, roots, root_type) {
+	this.createRoots = function(config, nodeTree) {
 		//Roots are what I call the "basic" building blocks, mostly just another
 		//variable of influence one can have when creating a new map. 
-		var objects = [];
+		var x = config.map.x
+		  , y = config.map.y
+		  , roots = config.map.roots
+		  , root_type = config.map.root_type
+		var nodes = [];
 		for(var i = 0; i < roots; i++) {
 			console.log('Generating root.');
 			new_coords = this.generateCoords(x, y);
-			objects[i] = {
+			nodes[i] = {
 				coords: new_coords,
 				grid_ref: this.grid[(new_coords.x)][(new_coords.y)],
-				node: require('./lib/nodes.js').createNode(root_type)
+				node: nodeTree.createNode('school')
 			};
-			this.grid[new_coords.x][new_coords.y].object = objects[i];
+			this.grid[new_coords.x][new_coords.y].node = nodes[i];
 			
 		}
 	}
@@ -105,7 +117,7 @@ function Grid(x, y) {
 	this.generateCoords = function(x, y) {
 		var possible_x = Math.floor(Math.random()*(x*2));
 		var possible_y = Math.floor(Math.random()*(y*2));
-		if(this.grid[possible_x][possible_y].object) {
+		if(this.grid[possible_x][possible_y].node) {
 			console.log('Coordinate location occupied, re-generating.');
 			generateCoords(x, y);
 		} else {
