@@ -53,8 +53,9 @@ function NodeTree() {
 	//color - a basic color this node is. Will be replaced later.
 	//size - The maximum number of tiles a grouped number of nodes will take up.
 	//	If blank, there is no maximum size.
-	//	Example: a school's size is "3", so after generating a school, 2 more
-	//	tiles may be reserved adjacent to the initial node for creating a school
+	//	Create ranges with a single - between numbers
+	//	Example: a house's size is "1-2", so after generating a house, 1 more
+	//	tiles may be reserved adjacent to the initial node for creating a house
 	//chance - the relative probability of a given node type being generated,
 	//	relative to every other "chance" property, and also only relative to
 	//	"sibling" node types. Example: a school is 30, a house is 90. A house
@@ -113,9 +114,7 @@ function NodeTree() {
 
 	}
     this.createNode = function(type) {
-	//This function finds a node type, looks to see if it has a prototype,
-	//and calls the parents recursively
-	
+	//This function finds a node type, looks it up, and returns it.
 		var parsedNode = this.branches[type];
 		
 		return parsedNode;
@@ -124,6 +123,7 @@ function NodeTree() {
 
 function Grid(x, y) {
 	this.grid = [];
+	this.nodes = [];
 	var max_x = x*2+1;
 	var max_y = y*2+1;
 	//Since JS (and, presumably, most languages) can't deal with negative
@@ -148,23 +148,41 @@ function Grid(x, y) {
 		var x = config.map.x
 		  , y = config.map.y
 		  , roots = config.map.roots
-		  , root_type = config.map.root_type
-		var nodes = [];
+		  , root_type = config.map.root_type;
 		for(var i = 0; i < roots; i++) {
+			var nodesRoot
+			  , nodesRoad
+			  , road = {}
+			  , new_coords = {};
 			console.log('Generating root.');
 			new_coords = this.generateCoords(x, y);
-			nodes[i] = {
+			nodesRoot = this.nodes.push({
 				coords: new_coords,
 				grid_ref: this.grid[(new_coords.x)][(new_coords.y)],
-				node: nodeTree.createNode('school')
-			};
-			this.grid[new_coords.x][new_coords.y].node = nodes[i];
+				info: nodeTree.createNode('school')
+			}) - 1; //.push returns the length, so subtract one.
+			this.grid[new_coords.x][new_coords.y].node = this.nodes[nodesRoot];
+			roadCoords = this.findAdjacent(new_coords);
+			if(roadCoords) {
+				nodesRoad = this.nodes.push({
+					coords: roadCoords,
+					grid_ref: this.grid[(roadCoords.x)][(roadCoords.y)],
+					info: nodeTree.createNode('road')
+				}) - 1; //.push returns the length, so subtract one.
+				this.grid[roadCoords.x][roadCoords.y].node = this.nodes[nodesRoad];
+				this.expandNode(this.nodes[nodesRoad], nodeTree);
+			}
+			this.expandNode(this.nodes[nodesRoot], nodeTree);
 			//TODO: expand the roots to meet their size property, and build roads
 			//along them
 		}
 	}
 	
 	this.generateCoords = function(x, y) {
+		//Generates random coordinates based off of a given max x and y pair.
+		//Note that this will not return in a grid coordinate (with possible
+		//negative numbers) but from origin 0,0 to maximum x, y. Should be
+		//obvious, but I've messed this up too many times to not note.
 		var possible_x = Math.floor(Math.random()*(x*2));
 		var possible_y = Math.floor(Math.random()*(y*2));
 		if(this.grid[possible_x][possible_y].node) {
@@ -179,6 +197,72 @@ function Grid(x, y) {
 		}
 		
 		return coords;
+	}
+	
+	this.findAdjacent = function(coords) {
+		//Finds if there is an empty space around a node in a random direction
+		//Returns coordinates of the found adjacent, and the direction it is in
+		//relative to the input coordinate, with 0 through 4, starting up and
+		//going clockwise.
+		var x = coords.x
+		  , y = coords.y
+		  , newCoords = {}
+		  , direction = Math.floor(Math.random()*4);
+		  
+		newCoords.x = x+0;
+		newCoords.y = y+0;
+		
+		findLoop:
+			for(var i = 0;i < 4;i++) {
+				direction = (direction+i)%4;
+				console.log("Testing in direction " + direction);
+				switchLoop:
+					switch (direction) {
+						case 0:
+							console.log("Switching in direction " + direction + " with coords " + x + "," + (y+1));
+							if (this.grid[x][y+1] && !this.grid[x][y+1].node) {
+								newCoords.y = y+1;
+								break findLoop;
+							} else {
+								direction++%4;
+							}
+						case 1:
+							console.log("Switching in direction " + direction);
+							if (this.grid[x+1][y] && !this.grid[x+1][y].node) {
+								newCoords.x = x+1;
+								break findLoop;
+							} else {
+								direction++%4;
+							}
+						case 2:
+							console.log("Switching in direction " + direction);
+							if (this.grid[x][y-1] && !this.grid[x][y-1].node) {
+								newCoords.y = y-1;
+								break findLoop;
+							} else {
+								direction++%4;
+							}
+						case 3:
+							console.log("Switching in direction " + direction);
+							if (this.grid[x-1][y] && !this.grid[x-1][y].node) {
+								newCoords.x = x-1;
+								break findLoop;
+							}
+					}
+				newCoords.direction = direction;
+			}
+			
+		if (newCoords.x == coords.x && newCoords.y == coords.y) {
+			newCoords = false;
+		} else {
+			console.log("Found adjacent: " + newCoords.x + "," + newCoords.y);
+		}
+		return newCoords;
+	}
+	
+	this.expandNode = function(node, nodeTree) {
+		//TODO: figure out sequence to call an unknown lib/shapes file. Should the
+		//size be managed from here, or from the called function? Probably the function.
 	}
 	
 }
