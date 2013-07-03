@@ -1,6 +1,6 @@
 {
-	"type" : "school",
-	"parentType" : "building",
-	"color" : "00FFFF",
-	"chance" : "30"
+    "type" : "school",
+    "parentType" : "building",
+    "color" : "00FFFF",
+    "chance" : "30"
 }
