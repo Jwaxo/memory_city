@@ -13,7 +13,7 @@
 		%>
 			<div class="column">
 			<% column.forEach(function(tile) { %>
-				<div class="tile"><div class="value"><% if(tile.node) { %><%= tile.node.info.type %><% } %></div><span class="coordinates"><%= tile.x %>,<%= tile.y %></span></div>
+				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>><div class="value"><% if(tile.node) { %><%= tile.node.info.type %><% } %></div><span class="coordinates"><%= tile.x %>,<%= tile.y %></span></div>
 			<% }); %>
 			</div>
 		<% }); %>

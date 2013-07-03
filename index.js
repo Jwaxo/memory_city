@@ -204,53 +204,47 @@ function Grid(x, y) {
         //Returns coordinates of the found adjacent, and the direction it is in
         //relative to the input coordinate, with 0 through 4, starting up and
         //going clockwise.
-        var x = coords.x
-          , y = coords.y
-          , newCoords = {}
-          , direction = Math.floor(Math.random()*4);
+        var x = coords.x;
+        var y = coords.y;
+        var newCoords = {};
+        var possibleDirections = [];
+        var newDirection;
           
         newCoords.x = x+0;
         newCoords.y = y+0;
         
-        findLoop:
-            for(var i = 0;i < 4;i++) {
-                direction = (direction+i)%4;
-                console.log("Testing in direction " + direction);
-                switchLoop:
-                    switch (direction) {
-                        case 0:
-                            console.log("Switching in direction " + direction + " with coords " + x + "," + (y+1));
-                            if (this.grid[x][y+1] && !this.grid[x][y+1].node) {
-                                newCoords.y = y+1;
-                                break findLoop;
-                            } else {
-                                direction++%4;
-                            }
-                        case 1:
-                            console.log("Switching in direction " + direction);
-                            if (this.grid[x+1][y] && !this.grid[x+1][y].node) {
-                                newCoords.x = x+1;
-                                break findLoop;
-                            } else {
-                                direction++%4;
-                            }
-                        case 2:
-                            console.log("Switching in direction " + direction);
-                            if (this.grid[x][y-1] && !this.grid[x][y-1].node) {
-                                newCoords.y = y-1;
-                                break findLoop;
-                            } else {
-                                direction++%4;
-                            }
-                        case 3:
-                            console.log("Switching in direction " + direction);
-                            if (this.grid[x-1][y] && !this.grid[x-1][y].node) {
-                                newCoords.x = x-1;
-                                break findLoop;
-                            }
-                    }
-                newCoords.direction = direction;
+        for(var i = 0;i < 4;i++) {
+            if (this.grid[x][y+1] && !this.grid[x][y+1].node) {
+                possibleDirections.push({
+                    x : x,
+                    y : y+1,
+                    direction: 0 //Up
+                });
             }
+            if (this.grid[x+1] && !this.grid[x+1][y].node) {
+                possibleDirections.push({
+                    x : x+1,
+                    y : y,
+                    direction: 1 //Right
+                });
+            }
+            if (this.grid[x][y-1] && !this.grid[x][y-1].node) {
+                possibleDirections.push({
+                    x : x,
+                    y : y-1,
+                    direction: 2 //Down
+                });
+            }
+            if (this.grid[x-1] && !this.grid[x-1][y].node) {
+                possibleDirections.push({
+                    x : x-1,
+                    y : y,
+                    direction: 3 //Left
+                    });
+            }
+        }
+        
+        newCoords = possibleDirections[Math.floor(Math.random()*(possibleDirections.length))];
             
         if (newCoords.x == coords.x && newCoords.y == coords.y) {
             newCoords = false;
