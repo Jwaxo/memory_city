@@ -4,12 +4,41 @@ module.exports = function() {
 	var fs = require('fs');
 	
 	var nodeTree = new NodeTree();
+	//Nodes are any rendered occupant of a tile, ideally entourage, buildings,
+	//or roads. They define what a given tile may be. They are read dynamically
+	//from the /lib/nodes folder, which parses for any .json files.
+	
+	//Nodes are defined heirarchically, thus, if a node is a child node, it will
+	//inherit any properties that are not defined specifically for the child,
+	//but are defined by the parent.
+	
+	//Thus far, nodes may have the following properties:
+	//	Note that any parent property can be overwritten with the value "!none"
+	//	to be a non-specified value on a child.
+	//type - the identifying name of the node, which matches the .json file name
+	//parentType - the identifying name of the parent this node inherits from
+	//color - a basic color this node is. Will be replaced later.
+	//size - The maximum number of tiles a grouped number of nodes will take up.
+	//	If blank, there is no maximum size.
+	//	Example: a school's size is "3", so after generating a school, 2 more
+	//	tiles may be reserved adjacent to the initial node for creating a school
+	//chance - the relative probability of a given node type being generated,
+	//	relative to every other "chance" property, and also only relative to
+	//	"sibling" node types. Example: a school is 30, a house is 90. A house
+	//	is three times more likely to occur than a school.
+	//adjacent - the type of node this node must be next to in order to initially
+	//	spawn.
+	//	May reference a node type or "!side".
+	//	Note that if a node's size is greater than 1 and has an adjacent,
+	//	once spawned it will be able to grow as much as it wants.
+	//shape - one of the following possible shapes: "square", "line", "rectangle"
+	//	Shapes will be the most important part of the algorithm, eventually.
 	var nodes = fs.readdirSync('./lib/nodes');
 	
 	for (var i=0;i<nodes.length;i++) {
 		nodeTree.buildBranch(nodes[i]);
 	}
-	console.log("Node tree built as " + nodeTree.tree['building'].children['school'].type);
+	console.log("Node tree built as " + nodeTree.branches["school"].size);
 	console.log('Map generator ready.');
 	
 	return function(config) {
@@ -48,14 +77,24 @@ function NodeTree() {
 		
 		console.log("Creating new branch '" + type + "'.");
 		
-		this.branches[type] = parsedNode;
-		this.branches[type].children = {};
+		if (parsedNode.hasOwnProperty("parentType")) {
+
+		}
+		
+		parsedNode.children = {};
 		
 		if (parsedNode.hasOwnProperty("parentType")) {
 			if (this.branches[parsedNode.parentType] == undefined) {
 				this.buildBranch(parsedNode.parentType + ".json");
 			}
-			this.branches[parsedNode.parentType].children[type] = parsedNode;
+			for (property in this.branches[parsedNode.parentType]) {
+				if (property === "children") continue;
+				if (!parsedNode.hasOwnProperty(property)) {
+					parsedNode[property] = this.branches[parsedNode.parentType];
+				}
+			}
+			this.branches[type] = parsedNode;
+			this.branches[parsedNode.parentType].children[type] = this.branches[type];
 			console.log("Built branch '" + this.branches[type].type + "' with parent '" + this.branches[parsedNode.parentType].type + "'.");
 		} else {
 			this.tree[type] = this.branches[type];

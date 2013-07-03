@@ -1,0 +1,7 @@
+{
+	"type" : "house",
+	"parentType" : "building",
+	"color" : "ff0000",
+	"chance" : "50",
+	"adjacent" : "!none"
+}

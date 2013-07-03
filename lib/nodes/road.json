@@ -1,0 +1,6 @@
+{
+	"type" : "road",
+	"color" : "333333",
+	"chance" : "10",
+	"adjacent" : "!side"
+}
