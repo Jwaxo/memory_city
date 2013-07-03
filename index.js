@@ -30,8 +30,8 @@ module.exports = function() {
             'grid' : grid.grid,
             'nodes' : grid.createRoots(config, nodeTree)
         };
-                
         return map;
+                
     };
 }();
 
@@ -170,9 +170,9 @@ function Grid(x, y) {
                     info: nodeTree.createNode('road')
                 }) - 1; //.push returns the length, so subtract one.
                 this.grid[roadCoords.x][roadCoords.y].node = this.nodes[nodesRoad];
-                this.expandNode(this.nodes[nodesRoad], nodeTree);
+                this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
             }
-            this.expandNode(this.nodes[nodesRoot], nodeTree);
+            this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
             //TODO: expand the roots to meet their size property, and build roads
             //along them
         }
@@ -213,7 +213,7 @@ function Grid(x, y) {
         newCoords.x = x+0;
         newCoords.y = y+0;
         
-        for(var i = 0;i < 4;i++) {
+        for (var i = 0;i < 4;i++) {
             if (this.grid[x][y+1] && !this.grid[x][y+1].node) {
                 possibleDirections.push({
                     x : x,
@@ -244,6 +244,8 @@ function Grid(x, y) {
             }
         }
         
+        //All possible coordinates are in the array, so we just pick a random
+        //array element, and those are our coordinates and direction.
         newCoords = possibleDirections[Math.floor(Math.random()*(possibleDirections.length))];
             
         if (newCoords.x == coords.x && newCoords.y == coords.y) {
@@ -254,7 +256,42 @@ function Grid(x, y) {
         return newCoords;
     }
     
-    this.expandNode = function(node, nodeTree) {
+    this.expandNode = function(node, nodeID, nodeTree) {
+        
+        var shape = require('./lib/shapes/' + node.info.shape + '.js')();
+        var notCount = 0;
+        var coord = {};
+        
+        if(!node.info.hasOwnProperty("size")) {
+            console.log("Shape has no size constraint; may crash.");
+            //Node's size is infinite; stop when two nodes in a row are off the
+            //grid.
+            while (notCount < 2) {
+                coord = shape(notCount);
+                coord.x = coord.x + node.coords.x;
+                coord.y = coord.y + node.coords.y;
+                
+                if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
+                    notCount++;
+                    continue;
+                } else if (this.grid[coord.x]
+                  && this.grid[coord.x][coord.y]
+                  && !this.grid[coord.x][coord.y].node) {
+                    this.nodes.push({
+                        coords: coord,
+                        grid_ref: this.grid[(coord.x)][(coord.y)],
+                        info: nodeTree.createNode(node.info.type),
+                        root: this.nodes[nodeID]
+                    })
+                    notCount = 0;
+                    continue;
+                } else {
+                    notCount++;
+                    continue;
+                }
+            }
+        }
+        
         //TODO: figure out sequence to call an unknown lib/shapes file. Should the
         //size be managed from here, or from the called function? Probably the function.
     }
