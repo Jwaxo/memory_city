@@ -4,6 +4,39 @@ module.exports = function() {
 	var fs = require('fs');
 	
 	var nodeTree = new NodeTree();
+
+	var nodes = fs.readdirSync('./lib/nodes');
+	
+	for (var i=0;i<nodes.length;i++) {
+		nodeTree.buildBranch(nodes[i]);
+	}
+	
+	console.log('Map generator ready.');
+	
+	return function(config) {
+		console.log('Config received');
+		if(config.seed) {
+			seedrandom(config.seed, true); //If a seed is set, replace Math.random()
+			console.log('Generating map from seed "' + config.seed + '".');
+		} else {
+			seedrandom('', true); //If not, we still need a seed, so make one
+			console.log('Generating map from random seed.');
+		}
+		
+		var grid = new Grid(config.map.x, config.map.y); //We create the grid
+		//separately because the nodes property of the map needs to reference it.
+		
+		var map = {
+			'grid' : grid.grid,
+			'nodes' : grid.createRoots(config, nodeTree)
+		};
+				
+		return map;
+	};
+}();
+
+function NodeTree() {
+
 	//Nodes are any rendered occupant of a tile, ideally entourage, buildings,
 	//or roads. They define what a given tile may be. They are read dynamically
 	//from the /lib/nodes folder, which parses for any .json files.
@@ -33,37 +66,6 @@ module.exports = function() {
 	//	once spawned it will be able to grow as much as it wants.
 	//shape - one of the following possible shapes: "square", "line", "rectangle"
 	//	Shapes will be the most important part of the algorithm, eventually.
-	var nodes = fs.readdirSync('./lib/nodes');
-	
-	for (var i=0;i<nodes.length;i++) {
-		nodeTree.buildBranch(nodes[i]);
-	}
-	console.log("Node tree built as " + nodeTree.branches["school"].size);
-	console.log('Map generator ready.');
-	
-	return function(config) {
-		console.log('Config received');
-		if(config.seed) {
-			seedrandom(config.seed, true); //If a seed is set, replace Math.random()
-			console.log('Generating map from seed "' + config.seed + '".');
-		} else {
-			seedrandom('', true); //If not, we still need a seed, so make one
-			console.log('Generating map from random seed.');
-		}
-		
-		var grid = new Grid(config.map.x, config.map.y); //We create the grid
-		//separately because the nodes property of the map needs to reference it.
-		
-		var map = {
-			'grid' : grid.grid,
-			'nodes' : grid.createRoots(config, nodeTree)
-		};
-				
-		return map;
-	};
-}();
-
-function NodeTree() {
 
 	this.tree = []; //We keep our complete, exclusive heirarchy here
 	this.branches = []; //Which references our recursive, unsorted node types
@@ -78,25 +80,33 @@ function NodeTree() {
 		console.log("Creating new branch '" + type + "'.");
 		
 		if (parsedNode.hasOwnProperty("parentType")) {
-
-		}
-		
-		parsedNode.children = {};
-		
-		if (parsedNode.hasOwnProperty("parentType")) {
+			//If the parent is undefined, we need to build that branch,
+			//from the top to the bottom. If that branch exists, we just glom on
+			//automatically
 			if (this.branches[parsedNode.parentType] == undefined) {
 				this.buildBranch(parsedNode.parentType + ".json");
 			}
+			//Now that we have the parent, inherit all of the properties that
+			//aren't overridden
 			for (property in this.branches[parsedNode.parentType]) {
-				if (property === "children") continue;
+				if (property === "children"
+					|| this.branches[parsedNode.parentType][property] === '!none'
+					) continue;
 				if (!parsedNode.hasOwnProperty(property)) {
-					parsedNode[property] = this.branches[parsedNode.parentType];
+					parsedNode[property] = this.branches[parsedNode.parentType][property];
 				}
 			}
 			this.branches[type] = parsedNode;
+			if(!this.branches[parsedNode.parentType].hasOwnProperty("children")) {
+				this.branches[parsedNode.parentType].children = {};
+			}
+			//Then assign this branch to the hash for quick reference
 			this.branches[parsedNode.parentType].children[type] = this.branches[type];
 			console.log("Built branch '" + this.branches[type].type + "' with parent '" + this.branches[parsedNode.parentType].type + "'.");
 		} else {
+			//Since this node has no parent, it belongs in the root of the tree,
+			//which references the branch in the hash.
+			this.branches[type] = parsedNode;
 			this.tree[type] = this.branches[type];
 			console.log("Built trunk with '" + this.tree[type].type + "'.");
 		}
@@ -149,7 +159,8 @@ function Grid(x, y) {
 				node: nodeTree.createNode('school')
 			};
 			this.grid[new_coords.x][new_coords.y].node = nodes[i];
-			
+			//TODO: expand the roots to meet their size property, and build roads
+			//along them
 		}
 	}
 	
