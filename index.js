@@ -156,23 +156,13 @@ function Grid(x, y) {
               , new_coords = {};
             console.log('Generating root.');
             new_coords = this.generateCoords(x, y);
-            nodesRoot = this.nodes.push({
-                coords: new_coords,
-                grid_ref: this.grid[(new_coords.x)][(new_coords.y)],
-                info: nodeTree.createNode('school')
-            }) - 1; //.push returns the length, so subtract one.
-            this.grid[new_coords.x][new_coords.y].node = this.nodes[nodesRoot];
+            nodesRoot = this.createNode(new_coords, "school", 0, nodeTree);
             roadCoords = this.findAdjacent(new_coords);
             if(roadCoords) {
-                nodesRoad = this.nodes.push({
-                    coords: roadCoords,
-                    grid_ref: this.grid[(roadCoords.x)][(roadCoords.y)],
-                    info: nodeTree.createNode('road')
-                }) - 1; //.push returns the length, so subtract one.
-                this.grid[roadCoords.x][roadCoords.y].node = this.nodes[nodesRoad];
+                nodesRoad = this.createNode(roadCoords, "road", 0, nodeTree);
                 this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
             }
-            this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
+            //this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
             //TODO: expand the roots to meet their size property, and build roads
             //along them
         }
@@ -256,7 +246,24 @@ function Grid(x, y) {
         return newCoords;
     }
     
+    this.createNode = function(coords, nodeType, parent, nodeTree) {
+        node = {
+            coords: coords,
+            grid_ref: this.grid[coords.x][coords.y],
+            info: nodeTree.createNode(nodeType)
+        }
+        if (parent > 0) {
+            node.root = parent;
+        }
+        nodeID = this.nodes.push(node) - 1;
+        this.grid[coords.x][coords.y].node = this.nodes[nodeID];
+        
+        return nodeID;
+    }
+    
     this.expandNode = function(node, nodeID, nodeTree) {
+    
+        console.log("Finding shape for nodetype '" + node.info.type + "'.");
         
         var shape = require('./lib/shapes/' + node.info.shape + '.js')();
         var notCount = 0;
@@ -267,6 +274,7 @@ function Grid(x, y) {
             //Node's size is infinite; stop when two nodes in a row are off the
             //grid.
             while (notCount < 2) {
+                console.log("notCount is " + notCount);
                 coord = shape(notCount);
                 coord.x = coord.x + node.coords.x;
                 coord.y = coord.y + node.coords.y;
@@ -277,12 +285,7 @@ function Grid(x, y) {
                 } else if (this.grid[coord.x]
                   && this.grid[coord.x][coord.y]
                   && !this.grid[coord.x][coord.y].node) {
-                    this.nodes.push({
-                        coords: coord,
-                        grid_ref: this.grid[(coord.x)][(coord.y)],
-                        info: nodeTree.createNode(node.info.type),
-                        root: this.nodes[nodeID]
-                    })
+                    nodesRoad = this.createNode(coord, node.info.type, this.nodes[nodeID], nodeTree);
                     notCount = 0;
                     continue;
                 } else {
