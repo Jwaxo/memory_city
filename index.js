@@ -177,7 +177,7 @@ function Grid(x, y) {
         var possible_y = Math.floor(Math.random()*(y*2));
         if(this.grid[possible_x][possible_y].node) {
             console.log('Coordinate location occupied, re-generating.');
-            generateCoords(x, y);
+            this.generateCoords(x, y);
         } else {
             console.log('Generated coordinate: ' + (possible_x-x).toString() + ',' + (possible_y-y).toString());
             coords = {
