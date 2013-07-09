@@ -272,23 +272,30 @@ function Grid(x, y) {
         if(!node.info.hasOwnProperty("size")) {
             console.log("Shape has no size constraint; may crash.");
             //Node's size is infinite; stop when two nodes in a row are off the
-            //grid.
+            //grid or collide with another node.
             while (notCount < 2) {
-                console.log("notCount is " + notCount);
                 coord = shape(notCount);
+                if (coord === false) {
+                    console.log("Returned 'Do Not Create'.");
+                    notCount++;
+                    continue;
+                }
                 coord.x = coord.x + node.coords.x;
                 coord.y = coord.y + node.coords.y;
                 
                 if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
+                    console.log("Failing to exist at coordinate " + coord.x + "," + coord.y + ".");
                     notCount++;
                     continue;
                 } else if (this.grid[coord.x]
                   && this.grid[coord.x][coord.y]
                   && !this.grid[coord.x][coord.y].node) {
+                    console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ".");
                     nodesRoad = this.createNode(coord, node.info.type, this.nodes[nodeID], nodeTree);
                     notCount = 0;
                     continue;
                 } else {
+                    console.log("Failing at coordinate " + coord.x + "," + coord.y + ".");
                     notCount++;
                     continue;
                 }
