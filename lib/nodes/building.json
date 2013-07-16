@@ -3,5 +3,6 @@
     "color" : "00ff00",
     "size" : "3",
     "chance" : "70",
-    "adjacent" : "road"
+    "adjacent" : "road",
+    "shape" : "random"
 }
