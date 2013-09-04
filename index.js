@@ -263,7 +263,7 @@ function Grid(x, y) {
     
     this.expandNode = function(node, nodeID, nodeTree) {
     
-        console.log("Finding shape for nodetype '" + node.info.type + "'.");
+        console.log("Finding shape for nodetype '" + node.info.type + "' to expand at " + node.coords.x + "," + node.coords.y + ".");
         
         var shape = require('./lib/shapes/' + node.info.shape + '.js')();
         var notCount = 0;
