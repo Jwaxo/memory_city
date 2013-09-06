@@ -263,16 +263,16 @@ function Grid(x, y) {
     
     this.expandNode = function(node, nodeID, nodeTree) {
     
-        console.log("Finding shape for nodetype '" + node.info.type + "' to expand at " + node.coords.x + "," + node.coords.y + ".");
+        console.log("Finding shape for nodetype '" + node.info.type + "' to expand to " + node.info.size + " at " + node.coords.x + "," + node.coords.y + ".");
         
         var shape = require('./lib/shapes/' + node.info.shape + '.js')();
         var notCount = 0;
         var count = 0;
         var coord = {};
 
-        while (notCount < 2 || (node.info.hasOwnProperty("size") && count <= node.info.size)) {
+        while ((notCount < 2 && !node.info.hasOwnProperty("size")) || (node.info.hasOwnProperty("size") && count <= node.info.size && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
-            //grid or collide with another node.
+            //grid or collide with another node. Otherwise stop at 4.
             coord = shape(notCount);
             if (coord === false) {
                 console.log("Returned 'Do Not Create'.");
@@ -289,13 +289,13 @@ function Grid(x, y) {
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
               && !this.grid[coord.x][coord.y].node) {
-                console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ".");
+                console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ". count is " + (count + 1));
                 nodesRoad = this.createNode(coord, node.info.type, this.nodes[nodeID], nodeTree);
                 notCount = 0;
                 count++;
                 continue;
             } else {
-                console.log("Failing at coordinate " + coord.x + "," + coord.y + ".");
+                console.log("Failing at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
                 continue;
             }
