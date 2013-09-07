@@ -273,6 +273,8 @@ function Grid(x, y) {
         while ((notCount < 2 && !node.info.hasOwnProperty("size")) || (node.info.hasOwnProperty("size") && count < node.info.size-1 && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
             //grid or collide with another node. Otherwise stop at four in a row.
+            //TODO: add attribute to shapes to self-govern how many notCount to look
+            //for, with 4 as the default.
             coord = shape(notCount);
             if (coord === false) {
                 console.log("Returned 'Do Not Create'.");
@@ -301,8 +303,6 @@ function Grid(x, y) {
             }
         }
         
-        //TODO: figure out sequence to call an unknown lib/shapes file. Should the
-        //size be managed from here, or from the called function? Probably the function.
     }
     
 }
