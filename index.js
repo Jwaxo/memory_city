@@ -270,9 +270,9 @@ function Grid(x, y) {
         var count = 0;
         var coord = {};
 
-        while ((notCount < 2 && !node.info.hasOwnProperty("size")) || (node.info.hasOwnProperty("size") && count <= node.info.size && notCount < 4)) {
+        while ((notCount < 2 && !node.info.hasOwnProperty("size")) || (node.info.hasOwnProperty("size") && count < node.info.size-1 && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
-            //grid or collide with another node. Otherwise stop at 4.
+            //grid or collide with another node. Otherwise stop at four in a row.
             coord = shape(notCount);
             if (coord === false) {
                 console.log("Returned 'Do Not Create'.");
@@ -283,7 +283,7 @@ function Grid(x, y) {
             coord.y = coord.y + node.coords.y;
             
             if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
-                console.log("Failing to exist at coordinate " + coord.x + "," + coord.y + ".");
+                console.log("Failing to exist at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
                 continue;
             } else if (this.grid[coord.x]
