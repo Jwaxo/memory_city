@@ -1,6 +1,6 @@
 exports.values = {
 
-    seed: 'AnotherTest',
+    seed: 'Second Test',
     map: {
         x: 5, //Highest maximum value of X. The grid will go from -x to x
         y: 5, //Same as above for y

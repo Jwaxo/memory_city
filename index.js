@@ -67,6 +67,7 @@ function NodeTree() {
     //    once spawned it will be able to grow as much as it wants.
     //shape - one of the following possible shapes: "square", "line", "rectangle"
     //    Shapes will be the most important part of the algorithm, eventually.
+    //root - a referenced node that they were expanded from.
 
     this.tree = []; //We keep our complete, exclusive heirarchy here
     this.branches = []; //Which references our recursive, unsorted node types
@@ -156,10 +157,10 @@ function Grid(x, y) {
               , new_coords = {};
             console.log('Generating root.');
             new_coords = this.generateCoords(x, y);
-            nodesRoot = this.createNode(new_coords, "school", 0, nodeTree);
+            nodesRoot = this.createNode(new_coords, "school", null, nodeTree);
             roadCoords = this.findAdjacent(new_coords);
             if(roadCoords) {
-                nodesRoad = this.createNode(roadCoords, "road", 0, nodeTree);
+                nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
                 this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
             }
             this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
@@ -246,19 +247,21 @@ function Grid(x, y) {
         return newCoords;
     }
     
-    this.createNode = function(coords, nodeType, parent, nodeTree) {
-        node = {
+    this.createNode = function(coords, nodeType, parentID, nodeTree) {
+        var node = {
             coords: coords,
             grid_ref: this.grid[coords.x][coords.y],
             info: nodeTree.createNode(nodeType)
         }
-        if (parent > 0) {
-            node.root = parent;
-        }
-        nodeID = this.nodes.push(node) - 1;
-        this.grid[coords.x][coords.y].node = this.nodes[nodeID];
+        node.nodeID = this.nodes.push(node) - 1;
         
-        return nodeID;
+        if (parentID != null) {
+            node.root = this.nodes[parentID];
+            node.parentID = parentID;
+        }
+        this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
+        
+        return node.nodeID;
     }
     
     this.expandNode = function(node, nodeID, nodeTree) {
@@ -291,8 +294,8 @@ function Grid(x, y) {
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
               && !this.grid[coord.x][coord.y].node) {
-                console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ". count is " + (count + 1));
-                nodesRoad = this.createNode(coord, node.info.type, this.nodes[nodeID], nodeTree);
+                nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
+                console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ". count is " + (count + 1) + " with ID " + nodesRoad);
                 notCount = 0;
                 count++;
                 continue;

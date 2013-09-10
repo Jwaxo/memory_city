@@ -4,19 +4,43 @@
     <title><%= title %></title>
 	
 	<link href="/stylesheets/style.css" rel="stylesheet">
-	
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+    
   </head>
   <body>
 	<div class="grid">
 		<% body.map.grid.forEach(function(column) { 
-			column.reverse();
+			column.reverse(); // Y-axis comes in backwards due to how computers thing of graphs
 		%>
 			<div class="column">
 			<% column.forEach(function(tile) { %>
-				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>><div class="value"><% if(tile.node) { %><%= tile.node.info.type %><% } %></div><span class="coordinates"><%= tile.x %>,<%= tile.y %></span></div>
+				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>>
+                    <span class="coordinates"><%= tile.x %>,<%= tile.y %></span>
+                    <div class="value">
+                    <% if(tile.node) { %>
+                        <%= tile.node.info.type %><br />
+                        [id: <%= tile.node.nodeID %>]<br />
+                        <% if(tile.node.parentID != null) { %>
+                            [parent: <%= tile.node.parentID %>]
+                        <% } %>
+                    <% } %>
+                    </div>
+                </div>
 			<% }); %>
 			</div>
-		<% }); %>
+		<% column.reverse(); //and flip it back in the end
+        }); %>
 	</div>
+    
+    <script type="text/javascript">
+    $(".tile .value").hide();
+    
+    $(".tile").hover(function() {
+        $(".value", this).show();
+        }, function() {
+        $(".value", this).hide();
+        }
+    );
+    </script>
   </body>
 </html>
