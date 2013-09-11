@@ -9,13 +9,11 @@
   </head>
   <body>
 	<div class="grid">
-		<% body.map.grid.forEach(function(column) { 
-			column.reverse(); // Y-axis comes in backwards due to how computers thing of graphs
-		%>
+		<% body.map.grid.forEach(function(column) { %>
 			<div class="column">
 			<% column.forEach(function(tile) { %>
 				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>>
-                    <span class="coordinates"><%= tile.x %>,<%= tile.y %></span>
+                    <span class="coordinates"><%= tile.x %>,<%= tile.y*-1%></span>
                     <div class="value">
                     <% if(tile.node) { %>
                         <%= tile.node.info.type %><br />
@@ -28,8 +26,7 @@
                 </div>
 			<% }); %>
 			</div>
-		<% column.reverse(); //and flip it back in the end
-        }); %>
+		<% }); %>
 	</div>
     
     <script type="text/javascript">
