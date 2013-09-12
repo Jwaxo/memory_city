@@ -167,7 +167,15 @@ function Grid(x, y) {
             //TODO: expand the roots to meet their size property, and build roads
             //along them
         }
+        return this.nodes;
     }
+    
+    this.fillEmptyTiles = function(nodeTree) {
+    //We need to create a hash of all empty nodes and cross them off of the list as the grid is taken up. Or possibly just bring a number
+    //down as each node is created? Signifying "number of unnoccupied grid points"? Then randomly pick a point using generateCoords
+    //and make a random node there, walking the tree of probability, then expand it, repeat until the number is at 0.
+    }
+    
     
     this.generateCoords = function(x, y) {
         //Generates random coordinates based off of a given max x and y pair.
