@@ -14,15 +14,22 @@
 			<% column.forEach(function(tile) { %>
 				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>>
                     <span class="coordinates"><%= tile.x %>,<%= tile.y*-1%></span>
-                    <div class="value">
                     <% if(tile.node) { %>
+                    <h1>
+                        <% if(tile.node.parentID != null) { %>
+                            <%=tile.node.parentID%>
+                        <% } else { %>
+                            <%=tile.node.nodeID%>
+                        <% } %>
+                    </h1>
+                    <div class="value">
                         <%= tile.node.info.type %><br />
                         [id: <%= tile.node.nodeID %>]<br />
-                        <% if(tile.node.parentID != null) { %>
-                            [parent: <%= tile.node.parentID %>]
+                        <% if(tile.node.parentID == null) { %>
+                            [parent]
                         <% } %>
-                    <% } %>
                     </div>
+                    <% } %>
                 </div>
 			<% }); %>
 			</div>

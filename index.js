@@ -123,8 +123,9 @@ function NodeTree() {
 }
 
 function Grid(x, y) {
-    this.grid = [];
-    this.nodes = [];
+    this.grid = []; // Tracks coordinates by notation "this.grid[x][y]"
+    this.nodes = []; // A hash of all nodes, arranged by nodeID (I believe)
+    this.grid_unused = []; // A simple hash to track which grid points are used
     var max_x = x*2+1;
     var max_y = y*2+1;
     //Since JS (and, presumably, most languages) can't deal with negative
@@ -140,6 +141,7 @@ function Grid(x, y) {
                 //Then when we assign the "real" coords, we can use the negative
                 //values, calculated here.
             };
+            this.grid[i][j].unused_index = this.grid_unused.push(this.grid[i][j]);
         }
     }
     
@@ -268,6 +270,7 @@ function Grid(x, y) {
             node.parentID = parentID;
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
+        delete this.grid_unused[this.grid[coords.x][coords.y].unused_index];
         
         return node.nodeID;
     }

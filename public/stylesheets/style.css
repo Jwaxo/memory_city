@@ -16,3 +16,7 @@ by @Jwaxo */
 	height: 98px;
 	border: 1px solid #000;
 }
+
+.grid .tile h1 {
+    margin: 0;
+}
