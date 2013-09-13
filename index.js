@@ -126,8 +126,10 @@ function Grid(x, y) {
     this.grid = []; // Tracks coordinates by notation "this.grid[x][y]"
     this.nodes = []; // A hash of all nodes, arranged by nodeID (I believe)
     this.grid_unused = []; // A simple hash to track which grid points are used
-    var max_x = x*2+1;
-    var max_y = y*2+1;
+    this.grid_x = x;
+    this.grid_y = y;
+    var max_x = this.grid_x*2+1;
+    var max_y = this.grid_y*2+1;
     //Since JS (and, presumably, most languages) can't deal with negative
     //integers for its array keys, we need to double+1 the x and y coords
     //for use in our loops.
@@ -148,9 +150,7 @@ function Grid(x, y) {
     this.createRoots = function(config, nodeTree) {
         //Roots are what I call the "basic" building blocks, mostly just another
         //variable of influence one can have when creating a new map. 
-        var x = config.map.x
-          , y = config.map.y
-          , roots = config.map.roots
+         var roots = config.map.roots
           , root_type = config.map.root_type;
         for(var i = 0; i < roots; i++) {
             var nodesRoot
@@ -158,7 +158,7 @@ function Grid(x, y) {
               , road = {}
               , new_coords = {};
             console.log('Generating root.');
-            new_coords = this.generateCoords(x, y);
+            new_coords = this.generateCoords();
             nodesRoot = this.createNode(new_coords, "school", null, nodeTree);
             roadCoords = this.findAdjacent(new_coords);
             if(roadCoords) {
@@ -173,29 +173,23 @@ function Grid(x, y) {
     }
     
     this.fillEmptyTiles = function(nodeTree) {
-    //We need to create a hash of all empty nodes and cross them off of the list as the grid is taken up. Or possibly just bring a number
-    //down as each node is created? Signifying "number of unnoccupied grid points"? Then randomly pick a point using generateCoords
-    //and make a random node there, walking the tree of probability, then expand it, repeat until the number is at 0.
+        //This function recursively calls itself until there are no more
+        //empty grid points
+        
     }
     
-    
-    this.generateCoords = function(x, y) {
+    this.generateCoords = function() {
         //Generates random coordinates based off of a given max x and y pair.
         //Note that this will not return in a grid coordinate (with possible
         //negative numbers) but from origin 0,0 to maximum x, y. Should be
         //obvious, but I've messed this up too many times to not note.
-        var possible_x = Math.floor(Math.random()*(x*2));
-        var possible_y = Math.floor(Math.random()*(y*2));
-        if(this.grid[possible_x][possible_y].node) {
-            console.log('Coordinate location occupied, re-generating.');
-            this.generateCoords(x, y);
-        } else {
-            console.log('Generated coordinate: ' + (possible_x-x).toString() + ',' + (possible_y-y).toString());
-            coords = {
-                x: (possible_x),
-                y: (possible_y)
-            };
-        }
+        var possible_grid_point = this.grid_unused[Math.floor(Math.random()*(this.grid_unused.length))];
+        
+        console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
+        coords = {
+            x: (possible_grid_point.x + this.grid_x),
+            y: (possible_grid_point.y + this.grid_y)
+        };
         
         return coords;
     }
@@ -252,7 +246,7 @@ function Grid(x, y) {
         if (newCoords.x == coords.x && newCoords.y == coords.y) {
             newCoords = false;
         } else {
-            console.log("Found adjacent: " + newCoords.x + "," + newCoords.y);
+            console.log("Found adjacent: " + (newCoords.x - this.grid_x) + "," + (newCoords.y - this.grid_y));
         }
         return newCoords;
     }
