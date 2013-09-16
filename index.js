@@ -275,6 +275,7 @@ function Grid(x, y) {
         
         var shape = require('./lib/shapes/' + node.info.shape + '.js')();
         var notCount = 0;
+        var lastFailed = false;
         var count = 0;
         var coord = {};
 
@@ -283,10 +284,11 @@ function Grid(x, y) {
             //grid or collide with another node. Otherwise stop at four in a row.
             //TODO: add attribute to shapes to self-govern how many notCount to look
             //for, with 4 as the default.
-            coord = shape(notCount);
+            coord = shape(lastFailed);
             if (coord === false) {
                 console.log("Returned 'Do Not Create'.");
                 notCount++;
+                lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
                 continue;
             }
             coord.x = coord.x + node.coords.x;
@@ -295,6 +297,7 @@ function Grid(x, y) {
             if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
                 console.log("Failing to exist at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
+                lastFailed = true;
                 continue;
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
@@ -303,10 +306,12 @@ function Grid(x, y) {
                 console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ". count is " + (count + 1) + " with ID " + nodesRoad);
                 notCount = 0;
                 count++;
+                lastFailed = false;
                 continue;
             } else {
                 console.log("Failing at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
+                lastFailed = true;
                 continue;
             }
         }
