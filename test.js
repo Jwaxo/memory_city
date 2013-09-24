@@ -4,7 +4,7 @@ console.log("Config loaded with seed '" + config.seed + "'.");
 
 var http = require('http');
 var express = require('express');
-var server = require('./server_init').createServer(express);
+var server = express();
 
 var map_generator = require('./index');
 
@@ -16,6 +16,13 @@ server.configure(function() {
     server.engine('.html', require('ejs').renderFile);
     server.use(express.static(__dirname + '/public'));
     server.use(express.bodyParser());
+});
+
+server.configure('development', function() {
+    console.log('Server running in development mode.');
+});
+server.configure('production', function() {
+    console.log('Server running in production mode.');
 });
 
 var map = map_generator(config);
