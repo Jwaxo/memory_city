@@ -60,17 +60,20 @@ function NodeTree() {
     //    relative to every other "chance" property, and also only relative to
     //    "sibling" node types. Example: a school is 30, a house is 90. A house
     //    is three times more likely to occur than a school.
+    //    If there is no chance property, a default of "10" is used.
     //adjacent - the type of node this node must be next to in order to initially
     //    spawn.
     //    May reference a node type or "!side".
+    //    WARNING: if a parentType has an adjacent requirement, all children will
+    //    implicitly have this requirement, even if they add additional adjacents
     //    Note that if a node's size is greater than 1 and has an adjacent,
     //    once spawned it will be able to grow as much as it wants.
     //shape - one of the following possible shapes: "square", "line", "rectangle"
     //    Shapes will be the most important part of the algorithm, eventually.
     //root - a referenced node that they were expanded from.
 
-    this.tree = []; //We keep our complete, exclusive heirarchy here
-    this.branches = []; //Which references our recursive, unsorted node types
+    this.tree = {}; //We keep our complete, exclusive heirarchy here
+    this.branches = {}; //Which references our recursive, unsorted node types
         
     this.buildBranch = function(node) {
     //This function finds a node type, looks to see if it has a prototype,
@@ -119,6 +122,49 @@ function NodeTree() {
         var parsedNode = this.branches[type];
         
         return parsedNode;
+    }
+    this.walkTypes = function(branch) {
+    //This function walks through the given branch of the NodeTree, constructs
+    //an array consisting of children's chance property, randomly picks one,
+    //and runs itself on that branch. When it finds no children, it returns.
+    
+        var currBranch = {};
+        var chanceArray = [];
+        var returnType = {};
+    
+        //The "parent" branch treats its children, the basic branches, a bit
+        //differently than most branches do, so we have to start with a tiny
+        //bit of trickery.
+        if (this.tree = branch) {
+            currBranch.children = this.tree;
+        } else {
+            currBranch = branch;
+        }
+         
+        //Now we build an array with slots in it to correspond to the chance
+        //given to a nodeType.
+        for (childBranch in currBranch.children) {
+            if (currBranch.children[childBranch].chance) {
+                for (var i; i < currBranch.children[childBranch].chance; i++) {
+                    chanceArray.push(childBranch);
+                }
+            } else {
+                for (var i; i < 10; i++) {
+                    chanceArray.push(childBranch);
+                }
+            }
+        }
+        //...and then we pick from that array, and walk if it is found.
+        if (chanceArray.length > 0) {
+            returnType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
+            if (this.branches[returnType]) {
+                this.walkTypes(this.branches[returnType]);
+            } else {
+                console.log('returnType in walkTypes not found!');
+            }
+        } else {
+            return branch;
+        }
     }
 }
 
@@ -175,7 +221,9 @@ function Grid(x, y) {
     this.fillEmptyTiles = function(nodeTree) {
         //This function recursively calls itself until there are no more
         //empty grid points
-        
+        var new_point = this.grid_unused[Math.floor(Math.random()*(this.grid_unused.length))];
+        var new_type = nodeTree.walkTypes(nodeTree.tree);
+        console.log('New ' + new_type.type + ' being created at ' + new_point.x + ',' + new_point.y);
     }
     
     this.generateCoords = function() {
