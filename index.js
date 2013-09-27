@@ -143,24 +143,28 @@ function NodeTree() {
          
         //Now we build an array with slots in it to correspond to the chance
         //given to a nodeType.
-        for (childBranch in currBranch.children) {
-            if (currBranch.children[childBranch].chance) {
-                for (var i; i < currBranch.children[childBranch].chance; i++) {
-                    chanceArray.push(childBranch);
-                }
-            } else {
-                for (var i; i < 10; i++) {
-                    chanceArray.push(childBranch);
+        if (currBranch.hasOwnProperty("children")) {
+            for (childBranch in currBranch.children) {
+                if (currBranch.children[childBranch].hasOwnProperty("chance")) {
+                    for (var i=0; i < currBranch.children[childBranch].chance; i++) {
+                        chanceArray.push(childBranch);
+                    }
+                } else {
+                    for (var i=0; i < 10; i++) {
+                        chanceArray.push(childBranch);
+                    }
                 }
             }
-        }
-        //...and then we pick from that array, and walk if it is found.
-        if (chanceArray.length > 0) {
-            returnType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
-            if (this.branches[returnType]) {
-                this.walkTypes(this.branches[returnType]);
+            //...and then we pick from that array, and walk if it is found.
+            if (chanceArray.length > 0) {
+                returnType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
+                if (this.branches[returnType]) {
+                    this.walkTypes(this.branches[returnType]);
+                } else {
+                    console.log('returnType in walkTypes not found!');
+                }
             } else {
-                console.log('returnType in walkTypes not found!');
+                return branch;
             }
         } else {
             return branch;
@@ -215,6 +219,9 @@ function Grid(x, y) {
             //TODO: expand the roots to meet their size property, and build roads
             //along them
         }
+        this.fillEmptyTiles(nodeTree);
+        this.fillEmptyTiles(nodeTree);
+        
         return this.nodes;
     }
     
