@@ -211,15 +211,15 @@ function Grid(x, y) {
         //We do this every time we modify grid_unused for quick counting or
         //for grabbing of unused points. It can't exist alone because grid points
         //need to know which indexes to remove when they get occupied.
-        this.unused_grid_hash = [];
+
+        this.grid_unused_hash = [];
         for(var i=0;i<this.grid_unused.length;i++) {
             if(typeof this.grid_unused[i] === 'object') {
-                this.unused_grid_hash.push(this.grid_unused[i]);
+                this.grid_unused_hash.push(this.grid_unused[i]);
             }
         }
+        console.log('Unused hash regenerated, unused point count is ' + this.grid_unused_hash.length);
     }
-    
-    this.regenerateUnused();
     
     this.createRoots = function(config, nodeTree) {
         //Roots are what I call the "basic" building blocks, mostly just another
@@ -257,7 +257,7 @@ function Grid(x, y) {
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
         
-        if (this.grid_unused_hash.length > 0) {
+        if (this.grid_unused_hash.length > 2) {
             this.fillEmptyTiles(nodeTree);
         } else {
             console.log('unused is ' + this.grid_unused_hash);
@@ -272,11 +272,13 @@ function Grid(x, y) {
         //obvious, but I've messed this up too many times to not note.
         var possible_grid_point = {};
         
+        this.regenerateUnused();
+        
         //Since we delete points from the hash when grid points are taken up,
         //the array ends up all funky, and we have to regenerate it quickly
         //before picking an unused point.
         
-        possible_grid_point = this.unused_grid_hash[Math.floor(Math.random()*(this.unused_grid_hash.length))];
+        possible_grid_point = this.grid_unused_hash[Math.floor(Math.random()*(this.grid_unused_hash.length))];
         
         console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
         coords = {
@@ -345,6 +347,7 @@ function Grid(x, y) {
     }
     
     this.createNode = function(coords, nodeType, parentID, nodeTree) {
+        console.log('Creating new node of type ' + nodeType);
         var node = {
             coords: coords,
             grid_ref: this.grid[coords.x][coords.y],
