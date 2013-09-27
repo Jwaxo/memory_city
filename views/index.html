@@ -8,7 +8,7 @@
     
   </head>
   <body>
-	<div class="grid">
+	<div class="grid" style="width: <%=body.map.grid.count * 36%>px; height: <%=body.map.grid[0].count * 36%>px;">
 		<% body.map.grid.forEach(function(column) { %>
 			<div class="column">
 			<% column.forEach(function(tile) { %>
@@ -16,7 +16,7 @@
                     <span class="coordinates"><%= tile.x %>,<%= tile.y*-1%></span>
                     <% if(tile.node) { %>
                     <h1>
-                        <% if(tile.node.parentID != null) { %>
+                        <% if(tile.node.parentID != null && tile.node.parentID != 0) { %>
                             <%=tile.node.parentID%>
                         <% } else { %>
                             <%=tile.node.nodeID%>

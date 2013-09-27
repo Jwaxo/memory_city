@@ -190,6 +190,8 @@ function Grid(x, y) {
     this.grid_y = y;
     var max_x = this.grid_x*2+1;
     var max_y = this.grid_y*2+1;
+    
+    this.dontagain = 0;
     //Since JS (and, presumably, most languages) can't deal with negative
     //integers for its array keys, we need to double+1 the x and y coords
     //for use in our loops.
@@ -198,10 +200,8 @@ function Grid(x, y) {
         this.grid[i] = [];
         for(var j = 0; j < max_y; j++) {
             this.grid[i][j] = {
-                x : (i-x),
-                y : (j-y)
-                //Then when we assign the "real" coords, we can use the negative
-                //values, calculated here.
+                x : i,
+                y : j
             };
             this.grid[i][j].unused_index = this.grid_unused.push(this.grid[i][j]);
         }
@@ -214,7 +214,7 @@ function Grid(x, y) {
 
         this.grid_unused_hash = [];
         for(var i=0;i<this.grid_unused.length;i++) {
-            if(typeof this.grid_unused[i] === 'object') {
+            if(this.grid_unused[i]) {
                 this.grid_unused_hash.push(this.grid_unused[i]);
             }
         }
@@ -257,7 +257,10 @@ function Grid(x, y) {
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
         
-        if (this.grid_unused_hash.length > 2) {
+        if (this.grid_unused_hash.length > 2 && this.dontagain == 0) {
+            this.fillEmptyTiles(nodeTree);
+        } else if (this.dontagain != 2) {
+            this.dontagain = this.dontagain + 1;
             this.fillEmptyTiles(nodeTree);
         } else {
             console.log('unused is ' + this.grid_unused_hash);
@@ -282,8 +285,8 @@ function Grid(x, y) {
         
         console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
         coords = {
-            x: (possible_grid_point.x + this.grid_x),
-            y: (possible_grid_point.y + this.grid_y)
+            x: possible_grid_point.x,
+            y: possible_grid_point.y
         };
         
         return coords;
@@ -341,13 +344,12 @@ function Grid(x, y) {
         if (newCoords.x == coords.x && newCoords.y == coords.y) {
             newCoords = false;
         } else {
-            console.log("Found adjacent: " + (newCoords.x - this.grid_x) + "," + (newCoords.y - this.grid_y));
         }
         return newCoords;
     }
     
     this.createNode = function(coords, nodeType, parentID, nodeTree) {
-        console.log('Creating new node of type ' + nodeType);
+        console.log('Creating new node of type ' + nodeType + ' at coords ' + coords.x + ',' + coords.y);
         var node = {
             coords: coords,
             grid_ref: this.grid[coords.x][coords.y],
@@ -382,20 +384,17 @@ function Grid(x, y) {
         if (node.info.hasOwnProperty("size")) {
             if (node.info.size.indexOf('-') !== -1) {
                 sizeList = node.info.size.split('-'); //If there's a size range...
-                console.log('Node size is a range, creating range.');
                 for (var i=sizeList[0];i<=sizeList[1];i++) {
                     sizeOptions.push(i);
                 }
                 size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
             } else if (node.info.size.indexOf(',') !== -1) {
                 sizeList = node.info.size.split(','); //If there's a size list...
-                console.log('Node size is a list, creating list.');
                 for (var i=sizeList[0];i<=sizeList[1];i++) {
                     sizeOptions.push(i);
                 }
                 size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
             } else {
-                console.log('Node size is standard, setting to ' + node.info.size);
                 size = node.info.size; //If the size is just stated
             }
         }
@@ -407,7 +406,6 @@ function Grid(x, y) {
             //for, with 4 as the default.
             coord = shape(lastFailed);
             if (coord === false) {
-                console.log("Returned 'Do Not Create'.");
                 notCount++;
                 lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
                 continue;
@@ -416,7 +414,6 @@ function Grid(x, y) {
             coord.y = coord.y + node.coords.y;
             
             if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
-                console.log("Failing to exist at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
                 lastFailed = true;
                 continue;
@@ -424,13 +421,11 @@ function Grid(x, y) {
               && this.grid[coord.x][coord.y]
               && !this.grid[coord.x][coord.y].node) {
                 nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
-                console.log("Succeeding at coordinate " + coord.x + "," + coord.y + ". count is " + (count + 1) + " with ID " + nodesRoad);
                 notCount = 0;
                 count++;
                 lastFailed = false;
                 continue;
             } else {
-                console.log("Failing at coordinate " + coord.x + "," + coord.y + ". notCount is " + (notCount + 1));
                 notCount++;
                 lastFailed = true;
                 continue;

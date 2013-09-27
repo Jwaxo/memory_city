@@ -9,14 +9,20 @@ by @Jwaxo */
 .grid .column {
 	position: relative;
 	float: left;
+    border-left: 1px solid #000;
 }
 
 .grid .tile{
-	width: 98px;
-	height: 98px;
-	border: 1px solid #000;
+	width: 35px;
+	height: 35px;
+	border-bottom: 1px solid #000;
 }
 
 .grid .tile h1 {
     margin: 0;
+    font-size: 12px;
+}
+
+.grid .coordinates {
+    display: none;
 }
