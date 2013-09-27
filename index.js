@@ -135,9 +135,11 @@ function NodeTree() {
         //The "parent" branch treats its children, the basic branches, a bit
         //differently than most branches do, so we have to start with a tiny
         //bit of trickery.
-        if (this.tree = branch) {
+        if (this.tree == branch) {
+            console.log('Branch is tree trunk, creating children out of all root branches.');
             currBranch.children = this.tree;
         } else {
+            console.log('Branch is actual branch.');
             currBranch = branch;
         }
          
@@ -145,6 +147,7 @@ function NodeTree() {
         //given to a nodeType.
         if (currBranch.hasOwnProperty("children")) {
             for (childBranch in currBranch.children) {
+
                 if (currBranch.children[childBranch].hasOwnProperty("chance")) {
                     for (var i=0; i < currBranch.children[childBranch].chance; i++) {
                         chanceArray.push(childBranch);
@@ -157,25 +160,32 @@ function NodeTree() {
             }
             //...and then we pick from that array, and walk if it is found.
             if (chanceArray.length > 0) {
-                returnType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
-                if (this.branches[returnType]) {
-                    this.walkTypes(this.branches[returnType]);
+                findType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
+                if (this.branches[findType]) {
+                    console.log('childType ' + findType + ' picked, walking.');
+                    returnType = this.walkTypes(this.branches[findType]);
                 } else {
-                    console.log('returnType in walkTypes not found!');
+                    console.log('returnType in walkTypes not found for ' + findType);
                 }
             } else {
-                return branch;
+                console.log('No possible chance for nodeType children of ' + branch.type);
+                returnType = branch;
             }
         } else {
-            return branch;
+            console.log('No possible children for nodeType ' + branch.type);
+            findType = branch;
         }
+        return findType;
     }
 }
 
 function Grid(x, y) {
     this.grid = []; // Tracks coordinates by notation "this.grid[x][y]"
     this.nodes = []; // A hash of all nodes, arranged by nodeID (I believe)
-    this.grid_unused = []; // A simple hash to track which grid points are used
+    this.grid_unused = []; // A list to track which grid points are used;
+                           //necessary because its indexes are tracked by grids
+                           //for quick removal
+    this.grid_unused_hash = []; // A hash of the unused grid that gets regenerated for quick grabbing.
     this.grid_x = x;
     this.grid_y = y;
     var max_x = this.grid_x*2+1;
@@ -196,6 +206,20 @@ function Grid(x, y) {
             this.grid[i][j].unused_index = this.grid_unused.push(this.grid[i][j]);
         }
     }
+    
+    this.regenerateUnused = function() {
+        //We do this every time we modify grid_unused for quick counting or
+        //for grabbing of unused points. It can't exist alone because grid points
+        //need to know which indexes to remove when they get occupied.
+        this.unused_grid_hash = [];
+        for(var i=0;i<this.grid_unused.length;i++) {
+            if(typeof this.grid_unused[i] === 'object') {
+                this.unused_grid_hash.push(this.grid_unused[i]);
+            }
+        }
+    }
+    
+    this.regenerateUnused();
     
     this.createRoots = function(config, nodeTree) {
         //Roots are what I call the "basic" building blocks, mostly just another
@@ -220,7 +244,6 @@ function Grid(x, y) {
             //along them
         }
         this.fillEmptyTiles(nodeTree);
-        this.fillEmptyTiles(nodeTree);
         
         return this.nodes;
     }
@@ -228,9 +251,18 @@ function Grid(x, y) {
     this.fillEmptyTiles = function(nodeTree) {
         //This function recursively calls itself until there are no more
         //empty grid points
-        var new_point = this.grid_unused[Math.floor(Math.random()*(this.grid_unused.length))];
+        var new_point = this.generateCoords();
         var new_type = nodeTree.walkTypes(nodeTree.tree);
-        console.log('New ' + new_type.type + ' being created at ' + new_point.x + ',' + new_point.y);
+        var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
+        
+        this.expandNode(this.nodes[new_node], new_node, nodeTree);
+        
+        if (this.grid_unused_hash.length > 0) {
+            this.fillEmptyTiles(nodeTree);
+        } else {
+            console.log('unused is ' + this.grid_unused_hash);
+        }
+        
     }
     
     this.generateCoords = function() {
@@ -238,7 +270,13 @@ function Grid(x, y) {
         //Note that this will not return in a grid coordinate (with possible
         //negative numbers) but from origin 0,0 to maximum x, y. Should be
         //obvious, but I've messed this up too many times to not note.
-        var possible_grid_point = this.grid_unused[Math.floor(Math.random()*(this.grid_unused.length))];
+        var possible_grid_point = {};
+        
+        //Since we delete points from the hash when grid points are taken up,
+        //the array ends up all funky, and we have to regenerate it quickly
+        //before picking an unused point.
+        
+        possible_grid_point = this.unused_grid_hash[Math.floor(Math.random()*(this.unused_grid_hash.length))];
         
         console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
         coords = {
@@ -320,6 +358,7 @@ function Grid(x, y) {
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
         delete this.grid_unused[this.grid[coords.x][coords.y].unused_index];
+        this.regenerateUnused();
         
         return node.nodeID;
     }
@@ -333,8 +372,32 @@ function Grid(x, y) {
         var lastFailed = false;
         var count = 0;
         var coord = {};
+        var size = 0;
+        var sizeList = []; //These latter two are for nodes with multiple possible sizes
+        var sizeOptions = [];
+        
+        if (node.info.hasOwnProperty("size")) {
+            if (node.info.size.indexOf('-') !== -1) {
+                sizeList = node.info.size.split('-'); //If there's a size range...
+                console.log('Node size is a range, creating range.');
+                for (var i=sizeList[0];i<=sizeList[1];i++) {
+                    sizeOptions.push(i);
+                }
+                size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
+            } else if (node.info.size.indexOf(',') !== -1) {
+                sizeList = node.info.size.split(','); //If there's a size list...
+                console.log('Node size is a list, creating list.');
+                for (var i=sizeList[0];i<=sizeList[1];i++) {
+                    sizeOptions.push(i);
+                }
+                size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
+            } else {
+                console.log('Node size is standard, setting to ' + node.info.size);
+                size = node.info.size; //If the size is just stated
+            }
+        }
 
-        while ((notCount < 2 && !node.info.hasOwnProperty("size")) || (node.info.hasOwnProperty("size") && count < node.info.size-1 && notCount < 4)) {
+        while ((notCount < 2 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
             //grid or collide with another node. Otherwise stop at four in a row.
             //TODO: add attribute to shapes to self-govern how many notCount to look
