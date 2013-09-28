@@ -188,8 +188,8 @@ function Grid(x, y) {
     this.grid_unused_hash = []; // A hash of the unused grid that gets regenerated for quick grabbing.
     this.grid_x = x;
     this.grid_y = y;
-    var max_x = this.grid_x*2+1;
-    var max_y = this.grid_y*2+1;
+    var max_x = this.grid_x;
+    var max_y = this.grid_y;
     
     this.dontagain = 0;
     //Since JS (and, presumably, most languages) can't deal with negative
@@ -203,7 +203,7 @@ function Grid(x, y) {
                 x : i,
                 y : j
             };
-            this.grid[i][j].unused_index = this.grid_unused.push(this.grid[i][j]);
+            this.grid[i][j].unused_index = this.grid_unused.push(this.grid[i][j]) - 1;
         }
     }
     
@@ -252,15 +252,12 @@ function Grid(x, y) {
         //This function recursively calls itself until there are no more
         //empty grid points
         var new_point = this.generateCoords();
-        var new_type = nodeTree.walkTypes(nodeTree.tree);
+        var new_type = nodeTree.walkTypes(nodeTree.tree); //TODO: check for adjacents
         var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
         
-        if (this.grid_unused_hash.length > 2 && this.dontagain == 0) {
-            this.fillEmptyTiles(nodeTree);
-        } else if (this.dontagain != 2) {
-            this.dontagain = this.dontagain + 1;
+        if (this.grid_unused_hash.length > 0) {
             this.fillEmptyTiles(nodeTree);
         } else {
             console.log('unused is ' + this.grid_unused_hash);
@@ -281,7 +278,7 @@ function Grid(x, y) {
         //the array ends up all funky, and we have to regenerate it quickly
         //before picking an unused point.
         
-        possible_grid_point = this.grid_unused_hash[Math.floor(Math.random()*(this.grid_unused_hash.length))];
+        possible_grid_point = this.grid_unused_hash[Math.floor(Math.random()*(this.grid_unused_hash.length-1))];
         
         console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
         coords = {
@@ -343,8 +340,7 @@ function Grid(x, y) {
             
         if (newCoords.x == coords.x && newCoords.y == coords.y) {
             newCoords = false;
-        } else {
-        }
+        } 
         return newCoords;
     }
     
@@ -362,6 +358,8 @@ function Grid(x, y) {
             node.parentID = parentID;
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
+        console.log('Removing ' + coords.x + ',' + coords.y + ' from hash with index ' + this.grid[coords.x][coords.y].unused_index);
+        console.log('Currently, ' + this.grid_unused[this.grid[coords.x][coords.y].unused_index].x + ',' + this.grid_unused[this.grid[coords.x][coords.y].unused_index].y + ' exists at index ' + this.grid[coords.x][coords.y].unused_index);
         delete this.grid_unused[this.grid[coords.x][coords.y].unused_index];
         this.regenerateUnused();
         
