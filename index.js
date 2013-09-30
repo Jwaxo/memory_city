@@ -367,10 +367,13 @@ function Grid(x, y) {
     }
     
     this.expandNode = function(node, nodeID, nodeTree) {
+        //This function reads from the nodeTree to find out how to make a node
+        //"grow" according to its node rules, outlined in the .json file, and
+        //according to the shape file, specified by the "shape" parameter.
     
         console.log("Finding shape for nodetype '" + node.info.type + "' to expand to " + node.info.size + " at " + node.coords.x + "," + node.coords.y + ".");
         
-        var shape = require('./lib/shapes/' + node.info.shape + '.js')();
+        var shape = {};
         var notCount = 0;
         var lastFailed = false;
         var count = 0;
@@ -378,6 +381,14 @@ function Grid(x, y) {
         var size = 0;
         var sizeList = []; //These latter two are for nodes with multiple possible sizes
         var sizeOptions = [];
+        
+        
+        if (node.info.hasOwnProperty('shape') {
+            shape = require('./lib/shapes/' + node.info.shape + '.js')();
+        } else { // If no shape is assigned to that nodeType, just use random
+            shape = require('./lib/shapes/random.js')(); 
+        }
+            
         
         if (node.info.hasOwnProperty("size")) {
             if (node.info.size.indexOf('-') !== -1) {
@@ -395,6 +406,8 @@ function Grid(x, y) {
             } else {
                 size = node.info.size; //If the size is just stated
             }
+        } else { //If size isn't set, only make a single node
+            size = 1;
         }
 
         while ((notCount < 2 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
