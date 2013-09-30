@@ -383,7 +383,7 @@ function Grid(x, y) {
         var sizeOptions = [];
         
         
-        if (node.info.hasOwnProperty('shape') {
+        if (node.info.hasOwnProperty('shape')) {
             shape = require('./lib/shapes/' + node.info.shape + '.js')();
         } else { // If no shape is assigned to that nodeType, just use random
             shape = require('./lib/shapes/random.js')(); 
