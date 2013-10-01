@@ -2,5 +2,5 @@
     "type" : "school",
     "parentType" : "building",
     "color" : "FFFF00",
-    "chance" : "30"
+    "chance" : "5"
 }

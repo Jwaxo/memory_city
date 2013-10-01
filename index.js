@@ -111,6 +111,9 @@ function NodeTree() {
         } else {
             //Since this node has no parent, it belongs in the root of the tree,
             //which references the branch in the hash.
+            if (!parsedNode.hasOwnProperty('shape')) {
+                parsedNode.shape = 'random';
+            }
             this.branches[type] = parsedNode;
             this.tree[type] = this.branches[type];
             console.log("Built trunk with '" + this.tree[type].type + "'.");
@@ -135,11 +138,10 @@ function NodeTree() {
         //The "parent" branch treats its children, the basic branches, a bit
         //differently than most branches do, so we have to start with a tiny
         //bit of trickery.
-        if (this.tree == branch) {
-            console.log('Branch is tree trunk, creating children out of all root branches.');
+        if (this.tree == branch) { //On the first submission of walkType, the
+        //entire tree should be submitted.
             currBranch.children = this.tree;
         } else {
-            console.log('Branch is actual branch.');
             currBranch = branch;
         }
          
@@ -162,17 +164,17 @@ function NodeTree() {
             if (chanceArray.length > 0) {
                 findType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
                 if (this.branches[findType]) {
-                    console.log('childType ' + findType + ' picked, walking.');
+                    //We find a branch, so we walk it
                     returnType = this.walkTypes(this.branches[findType]);
                 } else {
                     console.log('returnType in walkTypes not found for ' + findType);
                 }
             } else {
-                console.log('No possible chance for nodeType children of ' + branch.type);
+                //No possible chance for nodeType children; basically an error
                 returnType = branch;
             }
         } else {
-            console.log('No possible children for nodeType ' + branch.type);
+            //No possible children for nodeType
             findType = branch;
         }
         return findType;
@@ -218,12 +220,15 @@ function Grid(x, y) {
                 this.grid_unused_hash.push(this.grid_unused[i]);
             }
         }
-        console.log('Unused hash regenerated, unused point count is ' + this.grid_unused_hash.length);
+        //TODO: log a percentage left to generate
+        //console.log('Unused hash regenerated, unused point count is ' + this.grid_unused_hash.length);
     }
     
     this.createRoots = function(config, nodeTree) {
         //Roots are what I call the "basic" building blocks, mostly just another
-        //variable of influence one can have when creating a new map. 
+        //variable of influence one can have when creating a new map.
+        //TODO: Make the roots "zoning" points, and make many types of buildings
+        //require to be next to the same building or touching the root
          var roots = config.map.roots
           , root_type = config.map.root_type;
         for(var i = 0; i < roots; i++) {
@@ -259,8 +264,6 @@ function Grid(x, y) {
         
         if (this.grid_unused_hash.length > 0) {
             this.fillEmptyTiles(nodeTree);
-        } else {
-            console.log('unused is ' + this.grid_unused_hash);
         }
         
     }
@@ -280,7 +283,6 @@ function Grid(x, y) {
         
         possible_grid_point = this.grid_unused_hash[Math.floor(Math.random()*(this.grid_unused_hash.length-1))];
         
-        console.log('Generated coordinate: ' + (possible_grid_point.x).toString() + ',' + (possible_grid_point.y).toString());
         coords = {
             x: possible_grid_point.x,
             y: possible_grid_point.y
@@ -345,7 +347,9 @@ function Grid(x, y) {
     }
     
     this.createNode = function(coords, nodeType, parentID, nodeTree) {
-        console.log('Creating new node of type ' + nodeType + ' at coords ' + coords.x + ',' + coords.y);
+    //Creates a new node at given coordinates. Requires coordinates, the plaintext
+    //name of the node type, parentID, and the nodeTree object. If no parentID,
+    //give 0.
         var node = {
             coords: coords,
             grid_ref: this.grid[coords.x][coords.y],
@@ -358,8 +362,9 @@ function Grid(x, y) {
             node.parentID = parentID;
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
-        console.log('Removing ' + coords.x + ',' + coords.y + ' from hash with index ' + this.grid[coords.x][coords.y].unused_index);
-        console.log('Currently, ' + this.grid_unused[this.grid[coords.x][coords.y].unused_index].x + ',' + this.grid_unused[this.grid[coords.x][coords.y].unused_index].y + ' exists at index ' + this.grid[coords.x][coords.y].unused_index);
+
+        //We need to remove that point from the unused hash to keep the list
+        //accurate, of course.
         delete this.grid_unused[this.grid[coords.x][coords.y].unused_index];
         this.regenerateUnused();
         
@@ -367,13 +372,12 @@ function Grid(x, y) {
     }
     
     this.expandNode = function(node, nodeID, nodeTree) {
-        //This function reads from the nodeTree to find out how to make a node
-        //"grow" according to its node rules, outlined in the .json file, and
-        //according to the shape file, specified by the "shape" parameter.
-    
-        console.log("Finding shape for nodetype '" + node.info.type + "' to expand to " + node.info.size + " at " + node.coords.x + "," + node.coords.y + ".");
+    //This function finds the nodeType information for a given node, and then
+    //creates child nodes to fill out that type until a given "stop" command is
+    //given.
+    //TODO: make a less arbitrary "stop expanding" rule than "when you fail twice."
         
-        var shape = {};
+        var shape = require('./lib/shapes/' + node.info.shape + '.js')();
         var notCount = 0;
         var lastFailed = false;
         var count = 0;
@@ -381,14 +385,6 @@ function Grid(x, y) {
         var size = 0;
         var sizeList = []; //These latter two are for nodes with multiple possible sizes
         var sizeOptions = [];
-        
-        
-        if (node.info.hasOwnProperty('shape')) {
-            shape = require('./lib/shapes/' + node.info.shape + '.js')();
-        } else { // If no shape is assigned to that nodeType, just use random
-            shape = require('./lib/shapes/random.js')(); 
-        }
-            
         
         if (node.info.hasOwnProperty("size")) {
             if (node.info.size.indexOf('-') !== -1) {
@@ -406,8 +402,6 @@ function Grid(x, y) {
             } else {
                 size = node.info.size; //If the size is just stated
             }
-        } else { //If size isn't set, only make a single node
-            size = 1;
         }
 
         while ((notCount < 2 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
