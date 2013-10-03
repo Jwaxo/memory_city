@@ -3,7 +3,7 @@ module.exports = function() {
     var seedrandom = require('seed-random');
     var fs = require('fs');
     
-    var nodeTree = require('jsonautotree');
+    var JSONAutoTree = require('jsonautotree');
 
     //Nodes are any rendered occupant of a tile, ideally entourage, buildings,
     //or roads. They define what a given tile may be. They are read dynamically
@@ -40,11 +40,9 @@ module.exports = function() {
     //    Shapes will be the most important part of the algorithm, eventually.
     //root - a referenced node that they were expanded from.
     
-    var nodes = fs.readdirSync('./lib/nodes');
+    var nodeTree = new JSONAutoTree('../../lib/nodes/');
     
-    for (var i=0;i<nodes.length;i++) {
-        nodeTree.buildBranch('../../lib/nodes/' + nodes[i]);
-    }
+    nodeTree.automateBranches();
     
     console.log('Map generator ready.');
     
