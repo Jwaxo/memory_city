@@ -40,7 +40,7 @@ module.exports = function() {
     //    Shapes will be the most important part of the algorithm, eventually.
     //root - a referenced node that they were expanded from.
     
-    var nodes = fs.readdirSync('./lib/nodes');
+    var nodes = fs.readdirSync('./node_modules/jsonautotree/lib/nodes');
     
     for (var i=0;i<nodes.length;i++) {
         nodeTree.buildBranch(nodes[i]);
