@@ -43,7 +43,7 @@ module.exports = function() {
     var nodes = fs.readdirSync('./lib/nodes');
     
     for (var i=0;i<nodes.length;i++) {
-        nodeTree.buildBranch(nodes[i]);
+        nodeTree.buildBranch('../../lib/nodes/' + nodes[i]);
     }
     
     console.log('Map generator ready.');
