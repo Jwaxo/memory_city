@@ -3,39 +3,7 @@ module.exports = function() {
     var seedrandom = require('seed-random');
     var fs = require('fs');
     
-    var nodeTree = new NodeTree();
-
-    var nodes = fs.readdirSync('./lib/nodes');
-    
-    for (var i=0;i<nodes.length;i++) {
-        nodeTree.buildBranch(nodes[i]);
-    }
-    
-    console.log('Map generator ready.');
-    
-    return function(config) {
-        console.log('Config received');
-        if(config.seed) {
-            seedrandom(config.seed, true); //If a seed is set, replace Math.random()
-            console.log('Generating map from seed "' + config.seed + '".');
-        } else {
-            seedrandom('', true); //If not, we still need a seed, so make one
-            console.log('Generating map from random seed.');
-        }
-        
-        var grid = new Grid(config.map.x, config.map.y); //We create the grid
-        //separately because the nodes property of the map needs to reference it.
-        
-        var map = {
-            'grid' : grid.grid,
-            'nodes' : grid.createRoots(config, nodeTree)
-        };
-        return map;
-                
-    };
-}();
-
-function NodeTree() {
+    var nodeTree = require('jsonautotree');
 
     //Nodes are any rendered occupant of a tile, ideally entourage, buildings,
     //or roads. They define what a given tile may be. They are read dynamically
@@ -71,115 +39,36 @@ function NodeTree() {
     //shape - one of the following possible shapes: "square", "line", "rectangle"
     //    Shapes will be the most important part of the algorithm, eventually.
     //root - a referenced node that they were expanded from.
-
-    this.tree = {}; //We keep our complete, exclusive heirarchy here
-    this.branches = {}; //Which references our recursive, unsorted node types
-        
-    this.buildBranch = function(node) {
-    //This function finds a node type, looks to see if it has a prototype,
-    //and calls the parents recursively to build a "branch"
-        var parsedNode = require('./lib/nodes/' + node );
-        
-        var type = parsedNode.type;
-        
-        console.log("Creating new branch '" + type + "'.");
-        
-        if (parsedNode.hasOwnProperty("parentType")) {
-            //If the parent is undefined, we need to build that branch,
-            //from the top to the bottom. If that branch exists, we just glom on
-            //automatically
-            if (this.branches[parsedNode.parentType] == undefined) {
-                this.buildBranch(parsedNode.parentType + ".json");
-            }
-            //Now that we have the parent, inherit all of the properties that
-            //aren't overridden
-            for (property in this.branches[parsedNode.parentType]) {
-                if (property === "children"
-                    || this.branches[parsedNode.parentType][property] === '!none'
-                    ) continue;
-                if (!parsedNode.hasOwnProperty(property)) {
-                    parsedNode[property] = this.branches[parsedNode.parentType][property];
-                }
-            }
-            this.branches[type] = parsedNode;
-            if(!this.branches[parsedNode.parentType].hasOwnProperty("children")) {
-                this.branches[parsedNode.parentType].children = {};
-            }
-            //Then assign this branch to the hash for quick reference
-            this.branches[parsedNode.parentType].children[type] = this.branches[type];
-            console.log("Built branch '" + this.branches[type].type + "' with parent '" + this.branches[parsedNode.parentType].type + "'.");
-        } else {
-            //Since this node has no parent, it belongs in the root of the tree,
-            //which references the branch in the hash.
-            if (!parsedNode.hasOwnProperty('shape')) {
-                parsedNode.shape = 'random';
-            }
-            this.branches[type] = parsedNode;
-            this.tree[type] = this.branches[type];
-            console.log("Built trunk with '" + this.tree[type].type + "'.");
-        }
-
-    }
-    this.createNode = function(type) {
-    //This function finds a node type, looks it up, and returns it.
-        var parsedNode = this.branches[type];
-        
-        return parsedNode;
-    }
-    this.walkTypes = function(branch) {
-    //This function walks through the given branch of the NodeTree, constructs
-    //an array consisting of children's chance property, randomly picks one,
-    //and runs itself on that branch. When it finds no children, it returns.
     
-        var currBranch = {};
-        var chanceArray = [];
-        var returnType = {};
+    var nodes = fs.readdirSync('./lib/nodes');
     
-        //The "parent" branch treats its children, the basic branches, a bit
-        //differently than most branches do, so we have to start with a tiny
-        //bit of trickery.
-        if (this.tree == branch) { //On the first submission of walkType, the
-        //entire tree should be submitted.
-            currBranch.children = this.tree;
-        } else {
-            currBranch = branch;
-        }
-         
-        //Now we build an array with slots in it to correspond to the chance
-        //given to a nodeType.
-        if (currBranch.hasOwnProperty("children")) {
-            for (childBranch in currBranch.children) {
-
-                if (currBranch.children[childBranch].hasOwnProperty("chance")) {
-                    for (var i=0; i < currBranch.children[childBranch].chance; i++) {
-                        chanceArray.push(childBranch);
-                    }
-                } else {
-                    for (var i=0; i < 10; i++) {
-                        chanceArray.push(childBranch);
-                    }
-                }
-            }
-            //...and then we pick from that array, and walk if it is found.
-            if (chanceArray.length > 0) {
-                findType = chanceArray[Math.floor(Math.random()*(chanceArray.length))];
-                if (this.branches[findType]) {
-                    //We find a branch, so we walk it
-                    returnType = this.walkTypes(this.branches[findType]);
-                } else {
-                    console.log('returnType in walkTypes not found for ' + findType);
-                }
-            } else {
-                //No possible chance for nodeType children; basically an error
-                returnType = branch;
-            }
-        } else {
-            //No possible children for nodeType
-            findType = branch;
-        }
-        return findType;
+    for (var i=0;i<nodes.length;i++) {
+        nodeTree.buildBranch(nodes[i]);
     }
-}
+    
+    console.log('Map generator ready.');
+    
+    return function(config) {
+        console.log('Config received');
+        if(config.seed) {
+            seedrandom(config.seed, true); //If a seed is set, replace Math.random()
+            console.log('Generating map from seed "' + config.seed + '".');
+        } else {
+            seedrandom('', true); //If not, we still need a seed, so make one
+            console.log('Generating map from random seed.');
+        }
+        
+        var grid = new Grid(config.map.x, config.map.y); //We create the grid
+        //separately because the nodes property of the map needs to reference it.
+        
+        var map = {
+            'grid' : grid.grid,
+            'nodes' : grid.createRoots(config, nodeTree)
+        };
+        return map;
+                
+    };
+}();
 
 function Grid(x, y) {
     this.grid = []; // Tracks coordinates by notation "this.grid[x][y]"
@@ -353,7 +242,7 @@ function Grid(x, y) {
         var node = {
             coords: coords,
             grid_ref: this.grid[coords.x][coords.y],
-            info: nodeTree.createNode(nodeType)
+            info: nodeTree.getNode(nodeType)
         }
         node.nodeID = this.nodes.push(node) - 1;
         
