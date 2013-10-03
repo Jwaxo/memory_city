@@ -3,6 +3,6 @@
     "express": "3.3.8",
     "ejs": "0.8.4",
     "seed-random:": "1.0.1",
-    "jsonautotree": "0.0.3"
+    "jsonautotree": "0.0.x"
     }
 }
