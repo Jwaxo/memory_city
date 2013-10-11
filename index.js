@@ -126,7 +126,7 @@ function Grid(x, y) {
             console.log('Generating root.');
             new_coords = this.generateCoords();
             nodesRoot = this.createNode(new_coords, "school", null, nodeTree);
-            roadCoords = this.findAdjacent(new_coords);
+            roadCoords = this.findEmptyAdjacent(new_coords);
             if(roadCoords) {
                 nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
                 this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
@@ -144,7 +144,7 @@ function Grid(x, y) {
         //This function recursively calls itself until there are no more
         //empty grid points
         var new_point = this.generateCoords();
-        var new_type = nodeTree.walkTypes(nodeTree.tree); //TODO: check for adjacents
+        var new_type = nodeTree.walkTypes(nodeTree.tree, this.findAdjacentType(new_point)); //TODO: check for adjacents
         var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
@@ -178,7 +178,7 @@ function Grid(x, y) {
         return coords;
     }
     
-    this.findAdjacent = function(coords) {
+    this.findEmptyAdjacent = function(coords) {
         //Finds if there is an empty space around a node in a random direction
         //Returns coordinates of the found adjacent, and the direction it is in
         //relative to the input coordinate, with 0 through 4, starting up and
@@ -232,6 +232,62 @@ function Grid(x, y) {
         } 
         return newCoords;
     }
+    
+    this.findAdjacentType = function(coords) {
+        //Finds if there is an empty space around a node in a random direction
+        //Returns coordinates of the found adjacent, and the direction it is in
+        //relative to the input coordinate, with 0 through 4, starting up and
+        //going clockwise.
+        var x = coords.x;
+        var y = coords.y;
+        var grid = this.grid
+        
+        return function(nodeBranch) {
+        
+            var isLegal = true;
+            var possibleDirections = [];
+        
+            if (nodeBranch.adjacent && nodeBranch.adjacent != '!none') {
+        
+                for (var i = 0;i < 4;i++) {
+                    if (grid[x][y+1] && grid[x][y+1].type == nodeBranch.adjacent) {
+                        possibleDirections.push({
+                            x : x,
+                            y : y+1,
+                            direction: 0 //Up
+                        });
+                    }
+                    if (grid[x+1] && grid[x+1][y].type == nodeBranch.adjacent) {
+                        possibleDirections.push({
+                            x : x+1,
+                            y : y,
+                            direction: 1 //Right
+                        });
+                    }
+                    if (grid[x][y-1] && grid[x][y-1].type == nodeBranch.adjacent) {
+                        possibleDirections.push({
+                            x : x,
+                            y : y-1,
+                            direction: 2 //Down
+                        });
+                    }
+                    if (grid[x-1] && grid[x-1][y].type == nodeBranch.adjacent) {
+                        possibleDirections.push({
+                            x : x-1,
+                            y : y,
+                            direction: 3 //Left
+                            });
+                    }
+                }
+                if (possibleDirections.length < 1) {
+                    isLegal = false;
+                }
+            }
+            
+            return isLegal;
+        }
+    }
+
     
     this.createNode = function(coords, nodeType, parentID, nodeTree) {
     //Creates a new node at given coordinates. Requires coordinates, the plaintext
