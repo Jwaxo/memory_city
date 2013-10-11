@@ -31,7 +31,7 @@ module.exports = function() {
     //    If there is no chance property, a default of "10" is used.
     //adjacent - the type of node this node must be next to in order to initially
     //    spawn.
-    //    May reference a node type or "!side".
+    //    May reference a node type.
     //    WARNING: if a parentType has an adjacent requirement, all children will
     //    implicitly have this requirement, even if they add additional adjacents
     //    Note that if a node's size is greater than 1 and has an adjacent,
@@ -144,7 +144,7 @@ function Grid(x, y) {
         //This function recursively calls itself until there are no more
         //empty grid points
         var new_point = this.generateCoords();
-        var new_type = nodeTree.walkTypes(nodeTree.tree, this.findAdjacentType(new_point)); //TODO: check for adjacents
+        var new_type = nodeTree.walkTypes(nodeTree.tree, this.findAdjacentType(new_point));
         var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
@@ -248,30 +248,37 @@ function Grid(x, y) {
             var possibleDirections = [];
         
             if (nodeBranch.adjacent && nodeBranch.adjacent != '!none') {
-        
                 for (var i = 0;i < 4;i++) {
-                    if (grid[x][y+1] && grid[x][y+1].type == nodeBranch.adjacent) {
+                    if (grid[x][y+1] && grid[x][y+1].type == nodeBranch.adjacent
+                        && grid[x][y+1].hasOwnProperty('node')
+                        && grid[x][y+1].node.info.type == nodeBranch.adjacent) {
                         possibleDirections.push({
                             x : x,
                             y : y+1,
                             direction: 0 //Up
                         });
                     }
-                    if (grid[x+1] && grid[x+1][y].type == nodeBranch.adjacent) {
+                    if (grid[x+1] && grid[x+1][y].type == nodeBranch.adjacent
+                        && grid[x+1][y].hasOwnProperty('node')
+                        && grid[x+1][y].node.info.type == nodeBranch.adjacent) {
                         possibleDirections.push({
                             x : x+1,
                             y : y,
                             direction: 1 //Right
                         });
                     }
-                    if (grid[x][y-1] && grid[x][y-1].type == nodeBranch.adjacent) {
+                    if (grid[x][y-1]
+                        && grid[x][y-1].hasOwnProperty('node')
+                        && grid[x][y-1].node.info.type == nodeBranch.adjacent) {
                         possibleDirections.push({
                             x : x,
                             y : y-1,
                             direction: 2 //Down
                         });
                     }
-                    if (grid[x-1] && grid[x-1][y].type == nodeBranch.adjacent) {
+                    if (grid[x-1] && grid[x-1][y].type == nodeBranch.adjacent
+                        && grid[x-1][y].hasOwnProperty('node')
+                        && grid[x-1][y].node.info.type == nodeBranch.adjacent) {
                         possibleDirections.push({
                             x : x-1,
                             y : y,

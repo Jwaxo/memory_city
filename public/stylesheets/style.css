@@ -16,12 +16,21 @@ by @Jwaxo */
 	width: 35px;
 	height: 35px;
 	border-bottom: 1px solid #000;
+    overflow: visible;
+    position: relative;
 }
 
 .grid .tile h1 {
     margin: 0;
     font-size: 12px;
 }
+
+.grid  .value {
+    position: absolute;
+    background-color: #fff;
+    width: 50px;
+    z-index: 50;
+ }
 
 .grid .coordinates {
     display: none;
