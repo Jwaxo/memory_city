@@ -254,6 +254,8 @@ function Grid(x, y) {
                 } else {
                     adjacents.push(nodeBranch.adjacent);
                 }
+                
+                //We're keeping this all in an array for possible use in the future.
             
                 for (var i = 0;i < 4;i++) {
                     if (grid[x][y+1]
