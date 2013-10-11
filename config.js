@@ -1,6 +1,6 @@
 exports.values = {
 
-    seed: 'Fill it ALL.',
+    seed: 'Fill it ALL with adjacency.',
     map: {
         x: 20, //Highest maximum value of X. The grid will go from 0 to x
         y: 20, //Same as above for y

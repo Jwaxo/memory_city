@@ -244,23 +244,30 @@ function Grid(x, y) {
         
         return function(nodeBranch) {
         
+            var adjacents = [];
             var isLegal = true;
             var possibleDirections = [];
         
             if (nodeBranch.adjacent && nodeBranch.adjacent != '!none') {
+                if (nodeBranch.adjacent.indexOf(',')) {
+                    adjacents = nodeBranch.adjacent.split(',');
+                } else {
+                    adjacents.push(nodeBranch.adjacent);
+                }
+            
                 for (var i = 0;i < 4;i++) {
-                    if (grid[x][y+1] && grid[x][y+1].type == nodeBranch.adjacent
+                    if (grid[x][y+1]
                         && grid[x][y+1].hasOwnProperty('node')
-                        && grid[x][y+1].node.info.type == nodeBranch.adjacent) {
+                        && adjacents.indexOf(grid[x][y+1].node.info.type) > -1) {
                         possibleDirections.push({
                             x : x,
                             y : y+1,
                             direction: 0 //Up
                         });
                     }
-                    if (grid[x+1] && grid[x+1][y].type == nodeBranch.adjacent
+                    if (grid[x+1]
                         && grid[x+1][y].hasOwnProperty('node')
-                        && grid[x+1][y].node.info.type == nodeBranch.adjacent) {
+                        && adjacents.indexOf(grid[x+1][y].node.info.type) > -1) {
                         possibleDirections.push({
                             x : x+1,
                             y : y,
@@ -269,16 +276,16 @@ function Grid(x, y) {
                     }
                     if (grid[x][y-1]
                         && grid[x][y-1].hasOwnProperty('node')
-                        && grid[x][y-1].node.info.type == nodeBranch.adjacent) {
+                        && adjacents.indexOf(grid[x][y-1].node.info.type) > -1) {
                         possibleDirections.push({
                             x : x,
                             y : y-1,
                             direction: 2 //Down
                         });
                     }
-                    if (grid[x-1] && grid[x-1][y].type == nodeBranch.adjacent
+                    if (grid[x-1]
                         && grid[x-1][y].hasOwnProperty('node')
-                        && grid[x-1][y].node.info.type == nodeBranch.adjacent) {
+                        && adjacents.indexOf(grid[x-1][y].node.info.type) > -1) {
                         possibleDirections.push({
                             x : x-1,
                             y : y,
