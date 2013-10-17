@@ -242,7 +242,7 @@ function Grid(x, y) {
             isLegal = false;
         
             if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type')
-                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')) {
+                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')) { //TODO: Add zones so R, I, and C are grouped
                 isLegal = true;
             }
             
