@@ -242,7 +242,8 @@ function Grid(x, y) {
             isLegal = false;
         
             if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type')
-                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')) { //TODO: Add zones so R, I, and C are grouped
+                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')
+                ) { //TODO: Add zones so R, I, and C are grouped
                 isLegal = true;
             }
             
@@ -263,6 +264,7 @@ function Grid(x, y) {
         var possibleDirections = [];
         var x = coords.x;
         var y = coords.y;
+        var testValues = [];
     
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
             if (nodeBranch[property].indexOf(',')) {
@@ -276,39 +278,91 @@ function Grid(x, y) {
             for (var i = 0;i < 4;i++) {
                 if (grid[x][y+1]
                     && grid[x][y+1].hasOwnProperty('node')
-                    && adjacents.indexOf(grid[x][y+1].node.info[test]) > -1) {
-                    possibleDirections.push({
-                        x : x,
-                        y : y+1,
-                        direction: 0 //Up
-                    });
+                    ) {
+                        testValues = [];
+                        if (grid[x][y+1].node.info[test]) {
+                            if (grid[x][y+1].node.info[test].indexOf(',')) {
+                                testValues = grid[x][y+1].node.info[test].split(',');
+                            } else {
+                                testValues.push(grid[x][y+1].node.info[test]);
+                            }
+                        }
+                        for (var j = 0; j < testValues.length; j++) {
+                            if (adjacents.indexOf(testValues[j]) > -1) {
+                                possibleDirections.push({
+                                    x : x,
+                                    y : y+1,
+                                    direction: 0 //Up
+                                });
+                                break;
+                            }
+                        }
                 }
                 if (grid[x+1]
                     && grid[x+1][y].hasOwnProperty('node')
-                    && adjacents.indexOf(grid[x+1][y].node.info[test]) > -1) {
-                    possibleDirections.push({
-                        x : x+1,
-                        y : y,
-                        direction: 1 //Right
-                    });
+                    ) {
+                        testValues = [];
+                        if (grid[x+1][y].node.info[test]) {
+                            if (grid[x+1][y].node.info[test].indexOf(',')) {
+                                testValues = grid[x+1][y].node.info[test].split(',');
+                            } else {
+                                testValues.push(grid[x+1][y].node.info[test]);
+                            }
+                        }
+                        for (var j = 0; j < testValues.length; j++) {
+                            if (adjacents.indexOf(testValues[j]) > -1) {
+                                possibleDirections.push({
+                                    x : x+1,
+                                    y : y,
+                                    direction: 1 //Right
+                                });
+                                break;
+                            }
+                        }
                 }
                 if (grid[x][y-1]
                     && grid[x][y-1].hasOwnProperty('node')
-                    && adjacents.indexOf(grid[x][y-1].node.info[test]) > -1) {
-                    possibleDirections.push({
-                        x : x,
-                        y : y-1,
-                        direction: 2 //Down
-                    });
+                    ) {
+                        testValues = [];
+                        if (grid[x][y-1].node.info[test]) {
+                            if (grid[x][y-1].node.info[test].indexOf(',')) {
+                                testValues = grid[x][y-1].node.info[test].split(',');
+                            } else {
+                                testValues.push(grid[x][y-1].node.info[test]);
+                            }
+                        }
+                        for (var j = 0; j < testValues.length; j++) {
+                            if (adjacents.indexOf(testValues[j]) > -1) {
+                                possibleDirections.push({
+                                    x : x,
+                                    y : y-1,
+                                    direction: 2 //Down
+                                });
+                                break;
+                            }
+                        }
                 }
                 if (grid[x-1]
                     && grid[x-1][y].hasOwnProperty('node')
-                    && adjacents.indexOf(grid[x-1][y].node.info[test]) > -1) {
-                    possibleDirections.push({
-                        x : x-1,
-                        y : y,
-                        direction: 3 //Left
-                        });
+                    ) {
+                        testValues = [];
+                        if (grid[x-1][y].node.info[test]) {
+                            if (grid[x-1][y].node.info[test].indexOf(',')) {
+                                testValues = grid[x-1][y].node.info[test].split(',');
+                            } else {
+                                testValues.push(grid[x-1][y].node.info[test]);
+                            }
+                        }
+                        for (var j = 0; j < testValues.length; j++) {
+                            if (adjacents.indexOf(testValues[j]) > -1) {
+                                possibleDirections.push({
+                                    x : x-1,
+                                    y : y,
+                                    direction: 3 //Left
+                                });
+                                break;
+                            }
+                        }
                 }
             }
             if (possibleDirections.length < 1) {
