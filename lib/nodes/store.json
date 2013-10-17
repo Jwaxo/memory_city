@@ -1,0 +1,7 @@
+{
+    "type" : "store",
+    "parentType" : "building",
+    "color" : "00fcff",
+    "chance" : "50",
+    "zone" : "C"
+}

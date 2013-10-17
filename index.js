@@ -144,7 +144,7 @@ function Grid(x, y) {
         //This function recursively calls itself until there are no more
         //empty grid points
         var new_point = this.generateCoords();
-        var new_type = nodeTree.walkTypes(nodeTree.tree, this.findAdjacentType(new_point));
+        var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
         var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
@@ -233,75 +233,90 @@ function Grid(x, y) {
         return newCoords;
     }
     
-    this.findAdjacentType = function(coords) {
-        //Finds if there is an empty space around a node in a random direction
-        //Returns coordinates of the found adjacent, and the direction it is in
-        //relative to the input coordinate, with 0 through 4, starting up and
-        //going clockwise.
-        var x = coords.x;
-        var y = coords.y;
-        var grid = this.grid
+    this.walkTypesCallback = function(coords) {
+        var grid = this.grid;
+        var that = this;
         
         return function(nodeBranch) {
         
-            var adjacents = [];
-            var isLegal = true;
-            var possibleDirections = [];
+            isLegal = false;
         
-            if (nodeBranch.adjacent && nodeBranch.adjacent != '!none') {
-                if (nodeBranch.adjacent.indexOf(',')) {
-                    adjacents = nodeBranch.adjacent.split(',');
-                } else {
-                    adjacents.push(nodeBranch.adjacent);
-                }
-                
-                //We're keeping this all in an array for possible use in the future.
-            
-                for (var i = 0;i < 4;i++) {
-                    if (grid[x][y+1]
-                        && grid[x][y+1].hasOwnProperty('node')
-                        && adjacents.indexOf(grid[x][y+1].node.info.type) > -1) {
-                        possibleDirections.push({
-                            x : x,
-                            y : y+1,
-                            direction: 0 //Up
-                        });
-                    }
-                    if (grid[x+1]
-                        && grid[x+1][y].hasOwnProperty('node')
-                        && adjacents.indexOf(grid[x+1][y].node.info.type) > -1) {
-                        possibleDirections.push({
-                            x : x+1,
-                            y : y,
-                            direction: 1 //Right
-                        });
-                    }
-                    if (grid[x][y-1]
-                        && grid[x][y-1].hasOwnProperty('node')
-                        && adjacents.indexOf(grid[x][y-1].node.info.type) > -1) {
-                        possibleDirections.push({
-                            x : x,
-                            y : y-1,
-                            direction: 2 //Down
-                        });
-                    }
-                    if (grid[x-1]
-                        && grid[x-1][y].hasOwnProperty('node')
-                        && adjacents.indexOf(grid[x-1][y].node.info.type) > -1) {
-                        possibleDirections.push({
-                            x : x-1,
-                            y : y,
-                            direction: 3 //Left
-                            });
-                    }
-                }
-                if (possibleDirections.length < 1) {
-                    isLegal = false;
-                }
+            if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type')
+                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')) {
+                isLegal = true;
             }
             
             return isLegal;
         }
+    }
+        
+    
+    this.findAdjacentType = function(coords, grid, nodeBranch, property, test) {
+        //Finds if there is a node adjacent to the current coords whose test property
+        //matches a given property of the submitted nodeBranch.
+        
+        //For example, we want to make sure that our given nodeBranch's "adjacent"
+        //property matches with an adjacent "type" property.
+        
+        var adjacents = [];
+        var isLegal = true;
+        var possibleDirections = [];
+        var x = coords.x;
+        var y = coords.y;
+    
+        if (nodeBranch[property] && nodeBranch[property] != '!none') {
+            if (nodeBranch[property].indexOf(',')) {
+                adjacents = nodeBranch[property].split(',');
+            } else {
+                adjacents.push(nodeBranch[property]);
+            }
+            
+            //We're keeping this all in an array for possible use in the future.
+        
+            for (var i = 0;i < 4;i++) {
+                if (grid[x][y+1]
+                    && grid[x][y+1].hasOwnProperty('node')
+                    && adjacents.indexOf(grid[x][y+1].node.info[test]) > -1) {
+                    possibleDirections.push({
+                        x : x,
+                        y : y+1,
+                        direction: 0 //Up
+                    });
+                }
+                if (grid[x+1]
+                    && grid[x+1][y].hasOwnProperty('node')
+                    && adjacents.indexOf(grid[x+1][y].node.info[test]) > -1) {
+                    possibleDirections.push({
+                        x : x+1,
+                        y : y,
+                        direction: 1 //Right
+                    });
+                }
+                if (grid[x][y-1]
+                    && grid[x][y-1].hasOwnProperty('node')
+                    && adjacents.indexOf(grid[x][y-1].node.info[test]) > -1) {
+                    possibleDirections.push({
+                        x : x,
+                        y : y-1,
+                        direction: 2 //Down
+                    });
+                }
+                if (grid[x-1]
+                    && grid[x-1][y].hasOwnProperty('node')
+                    && adjacents.indexOf(grid[x-1][y].node.info[test]) > -1) {
+                    possibleDirections.push({
+                        x : x-1,
+                        y : y,
+                        direction: 3 //Left
+                        });
+                }
+            }
+            if (possibleDirections.length < 1) {
+                isLegal = false;
+            }
+        }
+        
+        return isLegal;
     }
 
     

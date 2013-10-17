@@ -4,5 +4,6 @@
     "color" : "ff0000",
     "chance" : "50",
     "adjacent" : "!none",
-    "size" : "1-2"
+    "size" : "1-2",
+    "zone" : "R"
 }

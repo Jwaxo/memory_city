@@ -1,0 +1,7 @@
+{
+    "type" : "powerplant",
+    "parentType" : "building",
+    "color" : "ff9600",
+    "chance" : "5",
+    "zone" : "I"
+}

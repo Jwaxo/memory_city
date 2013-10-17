@@ -2,5 +2,6 @@
     "type" : "office",
     "parentType" : "building",
     "color" : "b6b6b6",
-    "chance" : "50"
+    "chance" : "50",
+    "zone" : "I,C"
 }

@@ -2,5 +2,6 @@
     "type" : "school",
     "parentType" : "building",
     "color" : "FFFF00",
-    "chance" : "5"
+    "chance" : "5",
+    "zone" : "R,C"
 }
