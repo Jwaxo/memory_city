@@ -74,7 +74,10 @@ function Grid(x, y) {
     this.grid_unused = []; // A list to track which grid points are used;
                            //necessary because its indexes are tracked by grids
                            //for quick removal
+    this.grid_unused_adjacent = []; // A list of empty gridpoints adjacent to
+                                    // used points
     this.grid_unused_hash = []; // A hash of the unused grid that gets regenerated for quick grabbing.
+    this.grid_unused_adjacent_hash = [];
     this.grid_x = x;
     this.grid_y = y;
     var max_x = this.grid_x;
@@ -102,9 +105,15 @@ function Grid(x, y) {
         //need to know which indexes to remove when they get occupied.
 
         this.grid_unused_hash = [];
+        this.grid_unused_adjacent_hash = [];
         for(var i=0;i<this.grid_unused.length;i++) {
             if(this.grid_unused[i]) {
                 this.grid_unused_hash.push(this.grid_unused[i]);
+            }
+        }
+        for(var i=0;i<this.grid_unused_adjacent.length;i++) {
+            if(this.grid_unused_adjacent[i]) {
+                this.grid_unused_adjacent_hash.push(this.grid_unused_adjacent[i]);
             }
         }
         //TODO: log a percentage left to generate
@@ -144,7 +153,7 @@ function Grid(x, y) {
     this.fillEmptyTiles = function(nodeTree) {
         //This function recursively calls itself until there are no more
         //empty grid points
-        var new_point = this.generateCoords();
+        var new_point = this.generateCoordsAdjacent();
         var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
         var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
         
@@ -179,6 +188,29 @@ function Grid(x, y) {
         return coords;
     }
     
+    this.generateCoordsAdjacent = function() {
+        //Generates random coordinates of a grid point next to an occupied point.
+        //Note that this will not return in a grid coordinate (with possible
+        //negative numbers) but from origin 0,0 to maximum x, y. Should be
+        //obvious, but I've messed this up too many times to not note.
+        var possible_grid_point = {};
+        
+        this.regenerateUnused();
+        
+        //Since we delete points from the hash when grid points are taken up,
+        //the array ends up all funky, and we have to regenerate it quickly
+        //before picking an unused point.
+        
+        possible_grid_point = this.grid_unused_adjacent_hash[Math.floor(Math.random()*(this.grid_unused_adjacent_hash.length-1))];
+        
+        coords = {
+            x: possible_grid_point.x,
+            y: possible_grid_point.y
+        };
+        
+        return coords;
+    }
+    
     this.findEmptyAdjacents = function(coords) {
         //Finds if there is an empty space around a node in all directions
         //Returns coordinates of the found adjacents, and the direction they are in
@@ -198,28 +230,32 @@ function Grid(x, y) {
                 possibleDirections.push({
                     x : x,
                     y : y+1,
-                    direction: 0 //Up
+                    direction: 0, //Up
+                    unused_index: this.grid[x][y+1].unused_index
                 });
             }
             if (this.grid[x+1] && !this.grid[x+1][y].node) {
                 possibleDirections.push({
                     x : x+1,
                     y : y,
-                    direction: 1 //Right
+                    direction: 1, //Right
+                    unused_index: this.grid[x+1][y].unused_index
                 });
             }
             if (this.grid[x][y-1] && !this.grid[x][y-1].node) {
                 possibleDirections.push({
                     x : x,
                     y : y-1,
-                    direction: 2 //Down
+                    direction: 2, //Down
+                    unused_index: this.grid[x][y-1].unused_index
                 });
             }
             if (this.grid[x-1] && !this.grid[x-1][y].node) {
                 possibleDirections.push({
                     x : x-1,
                     y : y,
-                    direction: 3 //Left
+                    direction: 3, //Left
+                    unused_index: this.grid[x-1][y].unused_index
                     });
             }
         }
@@ -377,17 +413,32 @@ function Grid(x, y) {
             grid_ref: this.grid[coords.x][coords.y],
             info: nodeTree.getNode(nodeType)
         }
-        node.nodeID = this.nodes.push(node) - 1;
+        var nodeAdjacents = this.findEmptyAdjacents(coords);
+        
+        node.nodeID = this.nodes.push(node) - 1; //Make our this.nodes reference complete
         
         if (parentID != null) {
             node.root = this.nodes[parentID];
             node.parentID = parentID;
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
+        
+        for (var i = 0; i < nodeAdjacents.length; i++) {
+            if (
+                this.grid_unused[nodeAdjacents[i].unused_index]
+                && !this.grid_unused_adjacent[nodeAdjacents[i].unused_index]
+                ) {
+                this.grid_unused_adjacent[nodeAdjacents[i].unused_index] = this.grid_unused[nodeAdjacents[i].unused_index];
+            }
+        }
 
         //We need to remove that point from the unused hash to keep the list
         //accurate, of course.
         delete this.grid_unused[this.grid[coords.x][coords.y].unused_index];
+        if (this.grid_unused_adjacent[this.grid[coords.x][coords.y].unused_index]) {
+            //This should only not trigger when we're creating our first few nodes
+            delete this.grid_unused_adjacent[this.grid[coords.x][coords.y].unused_index];
+        }
         this.regenerateUnused();
         
         return node.nodeID;
