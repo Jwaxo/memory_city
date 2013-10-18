@@ -122,18 +122,19 @@ function Grid(x, y) {
             var nodesRoot
               , nodesRoad
               , road = {}
-              , new_coords = {};
+              , new_coords = {}
+              , possibleDirections;
             console.log('Generating root.');
             new_coords = this.generateCoords();
             nodesRoot = this.createNode(new_coords, "school", null, nodeTree);
-            roadCoords = this.findEmptyAdjacent(new_coords);
+            possibleDirections = this.findEmptyAdjacents(new_coords);
+            roadCoords = possibleDirections[Math.floor(Math.random()*(possibleDirections.length))];
+            
             if(roadCoords) {
                 nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
                 this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
             }
             this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
-            //TODO: expand the roots to meet their size property, and build roads
-            //along them
         }
         this.fillEmptyTiles(nodeTree);
         
@@ -178,9 +179,9 @@ function Grid(x, y) {
         return coords;
     }
     
-    this.findEmptyAdjacent = function(coords) {
-        //Finds if there is an empty space around a node in a random direction
-        //Returns coordinates of the found adjacent, and the direction it is in
+    this.findEmptyAdjacents = function(coords) {
+        //Finds if there is an empty space around a node in all directions
+        //Returns coordinates of the found adjacents, and the direction they are in
         //relative to the input coordinate, with 0 through 4, starting up and
         //going clockwise.
         var x = coords.x;
@@ -223,14 +224,7 @@ function Grid(x, y) {
             }
         }
         
-        //All possible coordinates are in the array, so we just pick a random
-        //array element, and those are our coordinates and direction.
-        newCoords = possibleDirections[Math.floor(Math.random()*(possibleDirections.length))];
-            
-        if (newCoords.x == coords.x && newCoords.y == coords.y) {
-            newCoords = false;
-        } 
-        return newCoords;
+        return possibleDirections;
     }
     
     this.walkTypesCallback = function(coords) {
