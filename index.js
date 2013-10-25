@@ -31,11 +31,15 @@ module.exports = function() {
     //    If there is no chance property, a default of "10" is used.
     //adjacent - the type of node this node must be next to in order to initially
     //    spawn.
-    //    May reference a node type.
+    //    References node types.
+    //    Can be composed of a comma-separated list.
+    //    Node types with a preceding ! will be read as "not road time".
     //    WARNING: if a parentType has an adjacent requirement, all children will
     //    implicitly have this requirement, even if they add additional adjacents
     //    Note that if a node's size is greater than 1 and has an adjacent,
     //    once spawned it will be able to grow as much as it wants.
+    //adjacentExpand - requirements to check for when filling out the rest of the
+    //    size requirements of a node.
     //shape - one of the following possible shapes: "square", "line", "rectangle"
     //    Shapes will be the most important part of the algorithm, eventually.
     //root - a referenced node that they were expanded from.
@@ -155,7 +159,7 @@ function Grid(x, y) {
         //empty grid points
         var new_point = this.generateCoordsAdjacent();
         var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
-        var new_node = this.createNode(new_point, new_type.type, 0, nodeTree);
+        var new_node = this.createNode(new_point, new_type.type, null, nodeTree);
         
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
         
@@ -271,9 +275,9 @@ function Grid(x, y) {
         
             isLegal = false;
         
-            if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type')
-                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone')
-                ) { //TODO: Add zones so R, I, and C are grouped
+            if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type', 0)
+                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone', 0)
+                ) { 
                 isLegal = true;
             }
             
@@ -282,14 +286,15 @@ function Grid(x, y) {
     }
         
     
-    this.findAdjacentType = function(coords, grid, nodeBranch, property, test) {
+    this.findAdjacentType = function(coords, grid, nodeBranch, property, test, parentID) {
         //Finds if there is a node adjacent to the current coords whose test property
-        //matches a given property of the submitted nodeBranch.
+        //matches a given property of the submitted nodeBranch, or does not match
+        //a given NOT property (signified with a preceding "!").
         
         //For example, we want to make sure that our given nodeBranch's "adjacent"
         //property matches with an adjacent "type" property.
         
-        var adjacents = [];
+        var requirements = [];
         var isLegal = true;
         var possibleDirections = [];
         var x = coords.x;
@@ -298,9 +303,9 @@ function Grid(x, y) {
     
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
             if (nodeBranch[property].indexOf(',')) {
-                adjacents = nodeBranch[property].split(',');
+                requirements = nodeBranch[property].split(',');
             } else {
-                adjacents.push(nodeBranch[property]);
+                requirements.push(nodeBranch[property]);
             }
             
             //We're keeping this all in an array for possible use in the future.
@@ -308,6 +313,7 @@ function Grid(x, y) {
             for (var i = 0;i < 4;i++) {
                 if (grid[x][y+1]
                     && grid[x][y+1].hasOwnProperty('node')
+                    && isLegal === true
                     ) {
                         testValues = [];
                         if (grid[x][y+1].node.info[test]) {
@@ -318,18 +324,28 @@ function Grid(x, y) {
                             }
                         }
                         for (var j = 0; j < testValues.length; j++) {
-                            if (adjacents.indexOf(testValues[j]) > -1) {
+                            if (
+                                requirements.indexOf("!" + testValues[j]) > -1
+                                && grid[x][y+1].node.parentID != parentID
+                                && grid[x][y+1].node.nodeID != parentID
+                                ) {
+                                if (nodeBranch.type == 'road') {
+                                    console.log('Node with parentID of ' + grid[x][y+1].node.parentID + ' and ID of ' + grid[x][y+1].node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y+1));
+                                }
+                                isLegal = false;
+                                break;
+                            } else if (requirements.indexOf(testValues[j]) > -1) {
                                 possibleDirections.push({
                                     x : x,
                                     y : y+1,
                                     direction: 0 //Up
                                 });
-                                break;
                             }
                         }
                 }
                 if (grid[x+1]
                     && grid[x+1][y].hasOwnProperty('node')
+                    && isLegal === true
                     ) {
                         testValues = [];
                         if (grid[x+1][y].node.info[test]) {
@@ -340,18 +356,28 @@ function Grid(x, y) {
                             }
                         }
                         for (var j = 0; j < testValues.length; j++) {
-                            if (adjacents.indexOf(testValues[j]) > -1) {
+                            if (
+                                requirements.indexOf("!" + testValues[j]) > -1
+                                && grid[x+1][y].node.parentID != parentID
+                                && grid[x+1][y].node.nodeID != parentID
+                            ) {
+                                if (nodeBranch.type == 'road') {
+                                    console.log('Node with parentID of ' + grid[x+1][y].node.parentID + ' and ID of ' + grid[x+1][y].node.nodeID + ' does not match ' + parentID + ' at ' + (x+1) + ',' + y);
+                                }
+                                isLegal = false;
+                                break;
+                            } else if (requirements.indexOf(testValues[j]) > -1) {
                                 possibleDirections.push({
                                     x : x+1,
                                     y : y,
                                     direction: 1 //Right
                                 });
-                                break;
                             }
                         }
                 }
                 if (grid[x][y-1]
                     && grid[x][y-1].hasOwnProperty('node')
+                    && isLegal === true
                     ) {
                         testValues = [];
                         if (grid[x][y-1].node.info[test]) {
@@ -362,18 +388,28 @@ function Grid(x, y) {
                             }
                         }
                         for (var j = 0; j < testValues.length; j++) {
-                            if (adjacents.indexOf(testValues[j]) > -1) {
+                            if (
+                                requirements.indexOf("!" + testValues[j]) > -1
+                                && grid[x][y-1].node.parentID != parentID
+                                && grid[x][y-1].node.nodeID != parentID
+                                ) {
+                                if (nodeBranch.type == 'road') {
+                                    console.log('Node with parentID of ' + grid[x][y-1].node.parentID + ' and ID of ' + grid[x][y-1].node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y-1));
+                                }
+                                isLegal = false;
+                                break;
+                            } else if (requirements.indexOf(testValues[j]) > -1) {
                                 possibleDirections.push({
                                     x : x,
                                     y : y-1,
                                     direction: 2 //Down
                                 });
-                                break;
                             }
                         }
                 }
                 if (grid[x-1]
                     && grid[x-1][y].hasOwnProperty('node')
+                    && isLegal === true
                     ) {
                         testValues = [];
                         if (grid[x-1][y].node.info[test]) {
@@ -384,13 +420,22 @@ function Grid(x, y) {
                             }
                         }
                         for (var j = 0; j < testValues.length; j++) {
-                            if (adjacents.indexOf(testValues[j]) > -1) {
+                            if (
+                                requirements.indexOf("!" + testValues[j]) > -1
+                                && grid[x-1][y].node.parentID != parentID
+                                && grid[x-1][y].node.nodeID != parentID
+                                ) {
+                                if (nodeBranch.type == 'road') {
+                                    console.log('Node with parentID of ' + grid[x-1][y].node.parentID + ' and ID of ' + grid[x-1][y].node.nodeID + ' does not match ' + parentID + ' at ' + (x-1) + ',' + y);
+                                }
+                                isLegal = false;
+                                break;
+                            } else if (requirements.indexOf(testValues[j]) > -1) {
                                 possibleDirections.push({
                                     x : x-1,
                                     y : y,
                                     direction: 3 //Left
                                 });
-                                break;
                             }
                         }
                 }
@@ -420,6 +465,8 @@ function Grid(x, y) {
         if (parentID != null) {
             node.root = this.nodes[parentID];
             node.parentID = parentID;
+        } else {
+            node.parentID = null;
         }
         this.grid[coords.x][coords.y].node = this.nodes[node.nodeID];
         
@@ -491,13 +538,19 @@ function Grid(x, y) {
             coord.x = coord.x + node.coords.x;
             coord.y = coord.y + node.coords.y;
             
+            if (node.info.type == 'road') {
+                console.log('About to adjacent test expansion of road with ID of ' + nodeID + ' and parentID of ' + node.parentID);
+            }
+            
             if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
                 notCount++;
                 lastFailed = true;
                 continue;
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
-              && !this.grid[coord.x][coord.y].node) {
+              && !this.grid[coord.x][coord.y].node
+              && this.findAdjacentType(coords, this.grid, node.info, 'adjacentExpand', 'type', nodeID)
+              ) {
                 nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
                 notCount = 0;
                 count++;
