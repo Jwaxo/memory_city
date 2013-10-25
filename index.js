@@ -300,12 +300,25 @@ function Grid(x, y) {
         var x = coords.x;
         var y = coords.y;
         var testValues = [];
-    
+        var allForNaught = false;
+            
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
+            
+            //Split up the requirements if there are more than one
             if (nodeBranch[property].indexOf(',')) {
                 requirements = nodeBranch[property].split(',');
             } else {
                 requirements.push(nodeBranch[property]);
+            }
+            
+            //If all requirements are ! requirements, set a flag for easy calc.
+            for (var i = 0;i < requirements.length;i++) {
+                if (requirements[i].indexOf('!') > -1) {
+                    allForNaught = true;
+                } else {
+                    allForNaught = false;
+                    break;
+                }
             }
             
             //We're keeping this all in an array for possible use in the future.
@@ -314,21 +327,22 @@ function Grid(x, y) {
                 if (grid[x][y+1]
                     && grid[x][y+1].hasOwnProperty('node')
                     && isLegal === true
+                ) {
+                    testValues = [];
+                    if (grid[x][y+1].node.info[test]
+                        && !allForNaught
                     ) {
-                        testValues = [];
-                        if (grid[x][y+1].node.info[test]) {
-                            if (grid[x][y+1].node.info[test].indexOf(',')) {
-                                testValues = grid[x][y+1].node.info[test].split(',');
-                            } else {
-                                testValues.push(grid[x][y+1].node.info[test]);
-                            }
+                        if (grid[x][y+1].node.info[test].indexOf(',')) {
+                            testValues = grid[x][y+1].node.info[test].split(',');
+                        } else {
+                            testValues.push(grid[x][y+1].node.info[test]);
                         }
                         for (var j = 0; j < testValues.length; j++) {
                             if (
                                 requirements.indexOf("!" + testValues[j]) > -1
                                 && grid[x][y+1].node.parentID != parentID
                                 && grid[x][y+1].node.nodeID != parentID
-                                ) {
+                            ) {
                                 if (nodeBranch.type == 'road') {
                                     console.log('Node with parentID of ' + grid[x][y+1].node.parentID + ' and ID of ' + grid[x][y+1].node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y+1));
                                 }
@@ -342,18 +356,28 @@ function Grid(x, y) {
                                 });
                             }
                         }
+                    } else if (allForNaught) {
+                        //If a node requires only that other tiles NOT match,
+                        //just push it immediately
+                        possibleDirections.push({
+                            x : x,
+                            y : y+1,
+                            direction: 0 //Up
+                        });
+                    }
                 }
                 if (grid[x+1]
                     && grid[x+1][y].hasOwnProperty('node')
                     && isLegal === true
+                ) {
+                    testValues = [];
+                    if (grid[x+1][y].node.info[test]
+                        && !allForNaught
                     ) {
-                        testValues = [];
-                        if (grid[x+1][y].node.info[test]) {
-                            if (grid[x+1][y].node.info[test].indexOf(',')) {
-                                testValues = grid[x+1][y].node.info[test].split(',');
-                            } else {
-                                testValues.push(grid[x+1][y].node.info[test]);
-                            }
+                        if (grid[x+1][y].node.info[test].indexOf(',')) {
+                            testValues = grid[x+1][y].node.info[test].split(',');
+                        } else {
+                            testValues.push(grid[x+1][y].node.info[test]);
                         }
                         for (var j = 0; j < testValues.length; j++) {
                             if (
@@ -374,18 +398,27 @@ function Grid(x, y) {
                                 });
                             }
                         }
+                    } else if (allForNaught) {
+                        possibleDirections.push({
+                            x : x+1,
+                            y : y,
+                            direction: 1 //Right
+                        });
+                    }
+                            
                 }
                 if (grid[x][y-1]
                     && grid[x][y-1].hasOwnProperty('node')
                     && isLegal === true
+                ) {
+                    testValues = [];
+                    if (grid[x][y-1].node.info[test]
+                        && !allForNaught
                     ) {
-                        testValues = [];
-                        if (grid[x][y-1].node.info[test]) {
-                            if (grid[x][y-1].node.info[test].indexOf(',')) {
-                                testValues = grid[x][y-1].node.info[test].split(',');
-                            } else {
-                                testValues.push(grid[x][y-1].node.info[test]);
-                            }
+                        if (grid[x][y-1].node.info[test].indexOf(',')) {
+                            testValues = grid[x][y-1].node.info[test].split(',');
+                        } else {
+                            testValues.push(grid[x][y-1].node.info[test]);
                         }
                         for (var j = 0; j < testValues.length; j++) {
                             if (
@@ -406,18 +439,26 @@ function Grid(x, y) {
                                 });
                             }
                         }
+                    } else if (allForNaught) {
+                        possibleDirections.push({
+                            x : x,
+                            y : y-1,
+                            direction: 2 //Down
+                        });
+                    }
                 }
                 if (grid[x-1]
                     && grid[x-1][y].hasOwnProperty('node')
                     && isLegal === true
+                ) {
+                    testValues = [];
+                    if (grid[x-1][y].node.info[test]
+                        && !allForNaught
                     ) {
-                        testValues = [];
-                        if (grid[x-1][y].node.info[test]) {
-                            if (grid[x-1][y].node.info[test].indexOf(',')) {
-                                testValues = grid[x-1][y].node.info[test].split(',');
-                            } else {
-                                testValues.push(grid[x-1][y].node.info[test]);
-                            }
+                        if (grid[x-1][y].node.info[test].indexOf(',')) {
+                            testValues = grid[x-1][y].node.info[test].split(',');
+                        } else {
+                            testValues.push(grid[x-1][y].node.info[test]);
                         }
                         for (var j = 0; j < testValues.length; j++) {
                             if (
@@ -438,6 +479,13 @@ function Grid(x, y) {
                                 });
                             }
                         }
+                    } else if (requirements.indexOf(testValues[j]) > -1) {
+                        possibleDirections.push({
+                            x : x-1,
+                            y : y,
+                            direction: 3 //Left
+                        });
+                    }
                 }
             }
             if (possibleDirections.length < 1) {
