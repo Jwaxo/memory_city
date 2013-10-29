@@ -292,7 +292,7 @@ function Grid(x, y) {
         //a given NOT property (signified with a preceding "!").
         
         //For example, we want to make sure that our given nodeBranch's "adjacent"
-        //property matches with an adjacent "type" property.
+        //property matches with an adjacent "type" test property.
         
         var requirements = [];
         var isLegal = true;
@@ -301,6 +301,8 @@ function Grid(x, y) {
         var y = coords.y;
         var testValues = [];
         var allForNaught = false;
+        var potentialGridpoint;
+        var potentialCoords = {};
             
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
             
@@ -324,167 +326,75 @@ function Grid(x, y) {
             //We're keeping this all in an array for possible use in the future.
         
             for (var i = 0;i < 4;i++) {
-                if (grid[x][y+1]
-                    && grid[x][y+1].hasOwnProperty('node')
+                switch (i) {
+                    case 0:
+                        potentialGridpoint = (grid[x][y+1] ? grid[x][y+1] : false);
+                        potentialCoords = {
+                            x : x,
+                            y : y+1,
+                            direction: 0 //Up
+                        }
+                        break;
+                    case 1:
+                        potentialGridpoint = (grid[x+1] ? (grid[x+1][y] ? grid[x+1][y] : false) : false);
+                        potentialCoords = {
+                            x : x+1,
+                            y : y,
+                            direction: 1 //Right
+                        }
+                        break;
+                    case 2:
+                        potentialGridpoint = (grid[x][y-1] ? grid[x][y-1] : false);
+                        potentialCoords = {
+                            x : x,
+                            y : y-1,
+                            direction: 2 //Down
+                        }
+                        break;
+                    case 3:
+                        potentialGridpoint = (grid[x-1] ? (grid[x-1][y] ? grid[x-1][y] : false) : false);
+                        potentialCoords = {
+                            x : x-1,
+                            y : y,
+                            direction: 3 //Left
+                        }
+                        break;
+                }
+                        
+                if (potentialGridpoint
+                    && potentialGridpoint.hasOwnProperty('node')
                     && isLegal === true
                 ) {
                     testValues = [];
-                    if (grid[x][y+1].node.info[test]
+                    if (potentialGridpoint.node.info[test]
                         && !allForNaught
                     ) {
-                        if (grid[x][y+1].node.info[test].indexOf(',')) {
-                            testValues = grid[x][y+1].node.info[test].split(',');
+                        if (potentialGridpoint.node.info[test].indexOf(',')) {
+                            testValues = potentialGridpoint.node.info[test].split(',');
                         } else {
-                            testValues.push(grid[x][y+1].node.info[test]);
+                            testValues.push(potentialGridpoint.node.info[test]);
                         }
                         for (var j = 0; j < testValues.length; j++) {
                             if (
                                 requirements.indexOf("!" + testValues[j]) > -1
-                                && grid[x][y+1].node.parentID != parentID
-                                && grid[x][y+1].node.nodeID != parentID
+                                && potentialGridpoint.node.parentID != parentID
+                                && potentialGridpoint.node.nodeID != parentID
                             ) {
                                 if (nodeBranch.type == 'road') {
-                                    console.log('Node with parentID of ' + grid[x][y+1].node.parentID + ' and ID of ' + grid[x][y+1].node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y+1));
+                                    console.log('Node with parentID of ' + potentialGridpoint.node.parentID + ' and ID of ' + potentialGridpoint.node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y+1));
                                 }
                                 isLegal = false;
                                 break;
-                            } else if (requirements.indexOf(testValues[j]) > -1) {
-                                possibleDirections.push({
-                                    x : x,
-                                    y : y+1,
-                                    direction: 0 //Up
-                                });
+                            } else if (requirements.indexOf(testValues[j]) > -1
+                                && requirements.indexOf("!" + testValues[j] != -1)
+                                ) {
+                                possibleDirections.push(potentialCoords);
                             }
                         }
                     } else if (allForNaught) {
                         //If a node requires only that other tiles NOT match,
                         //just push it immediately
-                        possibleDirections.push({
-                            x : x,
-                            y : y+1,
-                            direction: 0 //Up
-                        });
-                    }
-                }
-                if (grid[x+1]
-                    && grid[x+1][y].hasOwnProperty('node')
-                    && isLegal === true
-                ) {
-                    testValues = [];
-                    if (grid[x+1][y].node.info[test]
-                        && !allForNaught
-                    ) {
-                        if (grid[x+1][y].node.info[test].indexOf(',')) {
-                            testValues = grid[x+1][y].node.info[test].split(',');
-                        } else {
-                            testValues.push(grid[x+1][y].node.info[test]);
-                        }
-                        for (var j = 0; j < testValues.length; j++) {
-                            if (
-                                requirements.indexOf("!" + testValues[j]) > -1
-                                && grid[x+1][y].node.parentID != parentID
-                                && grid[x+1][y].node.nodeID != parentID
-                            ) {
-                                if (nodeBranch.type == 'road') {
-                                    console.log('Node with parentID of ' + grid[x+1][y].node.parentID + ' and ID of ' + grid[x+1][y].node.nodeID + ' does not match ' + parentID + ' at ' + (x+1) + ',' + y);
-                                }
-                                isLegal = false;
-                                break;
-                            } else if (requirements.indexOf(testValues[j]) > -1) {
-                                possibleDirections.push({
-                                    x : x+1,
-                                    y : y,
-                                    direction: 1 //Right
-                                });
-                            }
-                        }
-                    } else if (allForNaught) {
-                        possibleDirections.push({
-                            x : x+1,
-                            y : y,
-                            direction: 1 //Right
-                        });
-                    }
-                            
-                }
-                if (grid[x][y-1]
-                    && grid[x][y-1].hasOwnProperty('node')
-                    && isLegal === true
-                ) {
-                    testValues = [];
-                    if (grid[x][y-1].node.info[test]
-                        && !allForNaught
-                    ) {
-                        if (grid[x][y-1].node.info[test].indexOf(',')) {
-                            testValues = grid[x][y-1].node.info[test].split(',');
-                        } else {
-                            testValues.push(grid[x][y-1].node.info[test]);
-                        }
-                        for (var j = 0; j < testValues.length; j++) {
-                            if (
-                                requirements.indexOf("!" + testValues[j]) > -1
-                                && grid[x][y-1].node.parentID != parentID
-                                && grid[x][y-1].node.nodeID != parentID
-                                ) {
-                                if (nodeBranch.type == 'road') {
-                                    console.log('Node with parentID of ' + grid[x][y-1].node.parentID + ' and ID of ' + grid[x][y-1].node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y-1));
-                                }
-                                isLegal = false;
-                                break;
-                            } else if (requirements.indexOf(testValues[j]) > -1) {
-                                possibleDirections.push({
-                                    x : x,
-                                    y : y-1,
-                                    direction: 2 //Down
-                                });
-                            }
-                        }
-                    } else if (allForNaught) {
-                        possibleDirections.push({
-                            x : x,
-                            y : y-1,
-                            direction: 2 //Down
-                        });
-                    }
-                }
-                if (grid[x-1]
-                    && grid[x-1][y].hasOwnProperty('node')
-                    && isLegal === true
-                ) {
-                    testValues = [];
-                    if (grid[x-1][y].node.info[test]
-                        && !allForNaught
-                    ) {
-                        if (grid[x-1][y].node.info[test].indexOf(',')) {
-                            testValues = grid[x-1][y].node.info[test].split(',');
-                        } else {
-                            testValues.push(grid[x-1][y].node.info[test]);
-                        }
-                        for (var j = 0; j < testValues.length; j++) {
-                            if (
-                                requirements.indexOf("!" + testValues[j]) > -1
-                                && grid[x-1][y].node.parentID != parentID
-                                && grid[x-1][y].node.nodeID != parentID
-                                ) {
-                                if (nodeBranch.type == 'road') {
-                                    console.log('Node with parentID of ' + grid[x-1][y].node.parentID + ' and ID of ' + grid[x-1][y].node.nodeID + ' does not match ' + parentID + ' at ' + (x-1) + ',' + y);
-                                }
-                                isLegal = false;
-                                break;
-                            } else if (requirements.indexOf(testValues[j]) > -1) {
-                                possibleDirections.push({
-                                    x : x-1,
-                                    y : y,
-                                    direction: 3 //Left
-                                });
-                            }
-                        }
-                    } else if (requirements.indexOf(testValues[j]) > -1) {
-                        possibleDirections.push({
-                            x : x-1,
-                            y : y,
-                            direction: 3 //Left
-                        });
+                        possibleDirections.push(potentialCoords);
                     }
                 }
             }
@@ -585,10 +495,6 @@ function Grid(x, y) {
             }
             coord.x = coord.x + node.coords.x;
             coord.y = coord.y + node.coords.y;
-            
-            if (node.info.type == 'road') {
-                console.log('About to adjacent test expansion of road with ID of ' + nodeID + ' and parentID of ' + node.parentID);
-            }
             
             if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
                 notCount++;
