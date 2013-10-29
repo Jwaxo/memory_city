@@ -303,6 +303,7 @@ function Grid(x, y) {
         var allForNaught = false;
         var potentialGridpoint;
         var potentialCoords = {};
+        var reqsFulfilled = true;
             
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
             
@@ -374,26 +375,41 @@ function Grid(x, y) {
                         } else {
                             testValues.push(potentialGridpoint.node.info[test]);
                         }
+                        //First we test for "not" (!) vrequirements
                         for (var j = 0; j < testValues.length; j++) {
                             if (
                                 requirements.indexOf("!" + testValues[j]) > -1
                                 && potentialGridpoint.node.parentID != parentID
                                 && potentialGridpoint.node.nodeID != parentID
                             ) {
-                                if (nodeBranch.type == 'road') {
-                                    console.log('Node with parentID of ' + potentialGridpoint.node.parentID + ' and ID of ' + potentialGridpoint.node.nodeID + ' does not match ' + parentID + ' at ' + x + ',' + (y+1));
+                                if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
+                                    console.log('Node with parentID of ' + potentialGridpoint.node.parentID + ' and ID of ' + potentialGridpoint.node.nodeID + ' does not match ' + parentID + ' in direction ' + potentialCoords.direction);
                                 }
                                 isLegal = false;
                                 break;
-                            } else if (requirements.indexOf(testValues[j]) > -1
-                                && requirements.indexOf("!" + testValues[j] != -1)
-                                ) {
+                            }
+                        }
+                        if (isLegal) { //Now test for non-"!" requirements
+                            reqsFulfilled = true;
+                            for (var j = 0; j < testValues.length; j++) {
+                                if (requirements.indexOf(testValues[j]) == -1) {
+                                    if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
+                                        console.log('Node in direction ' + potentialCoords.direction + ' does not meet adjacentcy reqs.');
+                                    }
+                                    reqsFulfilled = false;
+                                    break;
+                                }
+                            }
+                            if (reqsFulfilled === true) {
                                 possibleDirections.push(potentialCoords);
                             }
                         }
                     } else if (allForNaught) {
+                        if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
+                            console.log('Road may be built in direction ' + potentialCoords.direction + ' from ' + x + ',' + y);
+                        }
                         //If a node requires only that other tiles NOT match,
-                        //just push it immediately
+                        //and there is no node to check, just push it immediately
                         possibleDirections.push(potentialCoords);
                     }
                 }
@@ -503,7 +519,7 @@ function Grid(x, y) {
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
               && !this.grid[coord.x][coord.y].node
-              && this.findAdjacentType(coords, this.grid, node.info, 'adjacentExpand', 'type', nodeID)
+              && this.findAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID)
               ) {
                 nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
                 notCount = 0;
