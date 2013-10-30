@@ -275,8 +275,8 @@ function Grid(x, y) {
         
             isLegal = false;
         
-            if (that.findAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type', 0)
-                && that.findAdjacentType(coords, grid, nodeBranch, 'zone', 'zone', 0)
+            if (that.checkAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type', 0, 'all')
+                && that.checkAdjacentType(coords, grid, nodeBranch, 'zone', 'zone', 0, 'one')
                 ) { 
                 isLegal = true;
             }
@@ -286,7 +286,7 @@ function Grid(x, y) {
     }
         
     
-    this.findAdjacentType = function(coords, grid, nodeBranch, property, test, parentID) {
+    this.checkAdjacentType = function(coords, grid, nodeBranch, property, test, parentID, comparison) {
         //Finds if there is a node adjacent to the current coords whose test property
         //matches a given property of the submitted nodeBranch, or does not match
         //a given NOT property (signified with a preceding "!").
@@ -294,12 +294,15 @@ function Grid(x, y) {
         //For example, we want to make sure that our given nodeBranch's "adjacent"
         //property matches with an adjacent "type" test property.
         
+        //If a given property has commas, the test will only care if ANY value in
+        //the list matches ANY value in the other list
+        
         var requirements = [];
+        var testValues = [];
         var isLegal = true;
         var adjacentDirections = [];
         var x = coords.x;
         var y = coords.y;
-        var testValues = [];
         var allForNaught = false;
         var potentialGridpoint = false;
         var potentialCoords = false;
@@ -371,10 +374,12 @@ function Grid(x, y) {
                         }
                         break;
                 }
-                //TODO: Just do the check here so we ignore parent nodes
+
                 if (potentialGridpoint
                     && potentialGridpoint.hasOwnProperty('node')
                     && isLegal === true
+                    && potentialGridpoint.node.parentID != parentID
+                    && potentialGridpoint.node.nodeID != parentID
                 ) {
                     testValues = [];
                     if (potentialGridpoint.node.info[test]) {
@@ -383,12 +388,10 @@ function Grid(x, y) {
                         } else {
                             testValues.push(potentialGridpoint.node.info[test]);
                         }
-                        //First we test for "not" (!) vrequirements
+                        //First we test for "not" (!) requirements
                         for (var j = 0; j < testValues.length; j++) {
                             if (
                                 requirements.indexOf("!" + testValues[j]) > -1
-                                && potentialGridpoint.node.parentID != parentID
-                                && potentialGridpoint.node.nodeID != parentID
                             ) {
                                 if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
                                     console.log('Node with parentID of ' + potentialGridpoint.node.parentID + ' and ID of ' + potentialGridpoint.node.nodeID + ' does not match ' + parentID + ' in direction ' + potentialCoords.direction);
@@ -397,14 +400,23 @@ function Grid(x, y) {
                                 break;
                             }
                         }
-                        if (isLegal) { //Now test for non-"!" requirements
+                        if (isLegal) { //Now test for non-"!" requirements, which
+                                       //is where our "comparison" var comes in
                             reqsFulfilled = true;
                             for (var j = 0; j < testValues.length; j++) {
                                 if (requirements.indexOf(testValues[j]) == -1) {
                                     if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
-                                        console.log('Node in direction ' + potentialCoords.direction + ' does not meet adjacentcy reqs.');
+                                        console.log('Node in direction ' + potentialCoords.direction + ' does not meet adjacentcy reqs for '+x+','+y+' with ' + testValues[j]);
                                     }
                                     reqsFulfilled = false;
+                                    
+                                    if (comparison == 'all') {
+                                        break;
+                                    }
+                                } else if (requirements.indexOf(testValues[j]) > 1
+                                && comparison == 'one'
+                                ) {
+                                    reqsFulfilled = true;
                                     break;
                                 }
                             }
@@ -527,7 +539,7 @@ function Grid(x, y) {
             } else if (this.grid[coord.x]
               && this.grid[coord.x][coord.y]
               && !this.grid[coord.x][coord.y].node
-              && this.findAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID)
+              && this.checkAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
               ) {
                 nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
                 notCount = 0;
