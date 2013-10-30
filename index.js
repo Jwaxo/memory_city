@@ -393,7 +393,6 @@ function Grid(x, y) {
                             if (
                                 requirements.indexOf("!" + testValues[j]) > -1
                             ) {
-                                if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
                                 isLegal = false;
                                 break;
                             }
@@ -401,14 +400,14 @@ function Grid(x, y) {
                         if (isLegal) { //Now test for non-"!" requirements, which
                                        //is where our "comparison" var comes in
                             reqsFulfilled = true;
+                            
                             for (var j = 0; j < testValues.length; j++) {
                                 if (requirements.indexOf(testValues[j]) == -1) {
                                     reqsFulfilled = false;
-                                    
                                     if (comparison == 'all') {
                                         break;
                                     }
-                                } else if (requirements.indexOf(testValues[j]) > 1
+                                } else if (requirements.indexOf(testValues[j]) > -1
                                 && comparison == 'one'
                                 ) {
                                     reqsFulfilled = true;
