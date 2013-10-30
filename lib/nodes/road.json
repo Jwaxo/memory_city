@@ -1,8 +1,9 @@
 {
     "type" : "road",
     "color" : "333333",
-    "chance" : "10",
+    "chance" : "30",
     "shape" : "line",
     "adjacent" : "road",
-    "adjacentExpand" : "!road"
+    "adjacentExpand" : "!road",
+    "zone" : "R,I,C"
 }
