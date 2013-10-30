@@ -394,8 +394,6 @@ function Grid(x, y) {
                                 requirements.indexOf("!" + testValues[j]) > -1
                             ) {
                                 if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
-                                    console.log('Node with parentID of ' + potentialGridpoint.node.parentID + ' and ID of ' + potentialGridpoint.node.nodeID + ' does not match ' + parentID + ' in direction ' + potentialCoords.direction);
-                                }
                                 isLegal = false;
                                 break;
                             }
@@ -405,9 +403,6 @@ function Grid(x, y) {
                             reqsFulfilled = true;
                             for (var j = 0; j < testValues.length; j++) {
                                 if (requirements.indexOf(testValues[j]) == -1) {
-                                    if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
-                                        console.log('Node in direction ' + potentialCoords.direction + ' does not meet adjacentcy reqs for '+x+','+y+' with ' + testValues[j]);
-                                    }
                                     reqsFulfilled = false;
                                     
                                     if (comparison == 'all') {
@@ -424,14 +419,11 @@ function Grid(x, y) {
                                 adjacentDirections.push(potentialCoords);
                             }
                         }
-                    } else if (allForNaught) {
-                        if (nodeBranch.type == 'road' && property == 'adjacentExpand') {
-                            console.log('Road may be built in direction ' + potentialCoords.direction + ' from ' + x + ',' + y);
-                        }
-                        //If a node requires only that other tiles NOT match,
-                        //and there is no node to check, just push it immediately
-                        adjacentDirections.push(potentialCoords);
                     }
+                } else if (allForNaught && !potentialGridpoint.hasOwnProperty('node')) {
+                    //If a node requires only that other tiles NOT match,
+                    //and there is no node to check, just push it immediately
+                    adjacentDirections.push(potentialCoords);
                 }
             }
             if (adjacentDirections.length < 1) {
