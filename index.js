@@ -296,13 +296,13 @@ function Grid(x, y) {
         
         var requirements = [];
         var isLegal = true;
-        var possibleDirections = [];
+        var adjacentDirections = [];
         var x = coords.x;
         var y = coords.y;
         var testValues = [];
         var allForNaught = false;
-        var potentialGridpoint;
-        var potentialCoords = {};
+        var potentialGridpoint = false;
+        var potentialCoords = false;
         var reqsFulfilled = true;
             
         if (nodeBranch[property] && nodeBranch[property] != '!none') {
@@ -327,49 +327,57 @@ function Grid(x, y) {
             //We're keeping this all in an array for possible use in the future.
         
             for (var i = 0;i < 4;i++) {
+                potentialGridpoint = false;
+                potentialCoords = false;
                 switch (i) {
                     case 0:
-                        potentialGridpoint = (grid[x][y+1] ? grid[x][y+1] : false);
-                        potentialCoords = {
-                            x : x,
-                            y : y+1,
-                            direction: 0 //Up
+                        if (grid[x][y+1]) {
+                            potentialGridpoint = grid[x][y+1];
+                            potentialCoords = {
+                                x : x,
+                                y : y+1,
+                                direction: 0 //Up
+                            }
                         }
                         break;
                     case 1:
-                        potentialGridpoint = (grid[x+1] ? (grid[x+1][y] ? grid[x+1][y] : false) : false);
-                        potentialCoords = {
-                            x : x+1,
-                            y : y,
-                            direction: 1 //Right
+                        if (grid[x+1] && grid[x+1][y]) {
+                            potentialGridpoint = grid[x+1][y];
+                            potentialCoords = {
+                                x : x+1,
+                                y : y,
+                                direction: 1 //Right
+                            }
                         }
                         break;
                     case 2:
-                        potentialGridpoint = (grid[x][y-1] ? grid[x][y-1] : false);
-                        potentialCoords = {
-                            x : x,
-                            y : y-1,
-                            direction: 2 //Down
+                        if (grid[x][y-1]) {
+                            potentialGridpoint = grid[x][y-1];
+                            potentialCoords = {
+                                x : x,
+                                y : y-1,
+                                direction: 2 //Down
+                            }
                         }
                         break;
                     case 3:
-                        potentialGridpoint = (grid[x-1] ? (grid[x-1][y] ? grid[x-1][y] : false) : false);
-                        potentialCoords = {
-                            x : x-1,
-                            y : y,
-                            direction: 3 //Left
+                        if (grid[x-1] && grid[x-1][y]) {
+                            potentialGridpoint = grid[x-1][y];
+                            potentialCoords = {
+                                x : x-1,
+                                y : y,
+                                direction: 3 //Left
+                            }
                         }
                         break;
                 }
-                        
+                //TODO: Just do the check here so we ignore parent nodes
                 if (potentialGridpoint
                     && potentialGridpoint.hasOwnProperty('node')
                     && isLegal === true
                 ) {
                     testValues = [];
-                    if (potentialGridpoint.node.info[test]
-                        && !allForNaught
-                    ) {
+                    if (potentialGridpoint.node.info[test]) {
                         if (potentialGridpoint.node.info[test].indexOf(',')) {
                             testValues = potentialGridpoint.node.info[test].split(',');
                         } else {
@@ -401,7 +409,7 @@ function Grid(x, y) {
                                 }
                             }
                             if (reqsFulfilled === true) {
-                                possibleDirections.push(potentialCoords);
+                                adjacentDirections.push(potentialCoords);
                             }
                         }
                     } else if (allForNaught) {
@@ -410,11 +418,11 @@ function Grid(x, y) {
                         }
                         //If a node requires only that other tiles NOT match,
                         //and there is no node to check, just push it immediately
-                        possibleDirections.push(potentialCoords);
+                        adjacentDirections.push(potentialCoords);
                     }
                 }
             }
-            if (possibleDirections.length < 1) {
+            if (adjacentDirections.length < 1) {
                 isLegal = false;
             }
         }
