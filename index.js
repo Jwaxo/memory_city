@@ -509,12 +509,13 @@ function Grid(x, y) {
             }
         }
 
-        while ((notCount < 2 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
+        while ((notCount < 4 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
             //grid or collide with another node. Otherwise stop at four in a row.
             //TODO: add attribute to shapes to self-govern how many notCount to look
             //for, with 4 as the default.
             coord = shape(lastFailed);
+            if (lastFailed && node.info.type == 'road') console.log('failed ' + nodeID);
             if (coord === false) {
                 notCount++;
                 lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
