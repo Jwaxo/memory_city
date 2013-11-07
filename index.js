@@ -149,7 +149,7 @@ function Grid(x, y) {
             }
             this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
         }
-        //this.fillEmptyTiles(nodeTree);
+        this.fillEmptyTiles(nodeTree);
         
         return this.nodes;
     }
@@ -515,7 +515,7 @@ function Grid(x, y) {
             //TODO: add attribute to shapes to self-govern how many notCount to look
             //for, with 4 as the default.
             coord = shape(lastFailed);
-            if (lastFailed && node.info.type == 'road') console.log('failed ' + nodeID);
+
             if (coord === false) {
                 notCount++;
                 lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
