@@ -149,7 +149,7 @@ function Grid(x, y) {
             }
             this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
         }
-        this.fillEmptyTiles(nodeTree);
+        //this.fillEmptyTiles(nodeTree);
         
         return this.nodes;
     }

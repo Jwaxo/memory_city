@@ -15,7 +15,7 @@
 				<div class="tile"<% if(tile.node) { %> style="background-color: #<%= tile.node.info.color %>" <% } %>>
                     <% if(tile.node) { %>
                     <h1>
-                        <% if(tile.node.parentID != null && tile.node.parentID != 0) { %>
+                        <% if(tile.node.parentID != null) { %>
                             <%=tile.node.parentID%>
                         <% } else { %>
                             <%=tile.node.nodeID%>
