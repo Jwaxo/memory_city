@@ -2,6 +2,7 @@
     "type" : "road",
     "color" : "333333",
     "chance" : "30",
+    "width" : "2",
     "shape" : "line",
     "adjacent" : "road",
     "adjacentExpand" : "!road",

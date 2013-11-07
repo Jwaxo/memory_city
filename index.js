@@ -24,6 +24,9 @@ module.exports = function() {
     //    Create ranges with a single - between numbers
     //    Example: a house's size is "1-2", so after generating a house, 1 more
     //    tiles may be reserved adjacent to the initial node for creating a house
+    //width - multi-use property that changes depending upon shape. For example,
+    //    in conjunction with "rectangle" and "size" determines the dimensions,
+    //    or with "line" determines how wide the line is, with "size" being length.
     //chance - the relative probability of a given node type being generated,
     //    relative to every other "chance" property, and also only relative to
     //    "sibling" node types. Example: a school is 30, a house is 90. A house
@@ -476,13 +479,40 @@ function Grid(x, y) {
         return node.nodeID;
     }
     
+    this.getNodePropertyRange = function(nodeInfo, property) {
+    
+        var returnProperty = 0;
+        var propertyOptions = [];
+        var propertyList = [];
+    
+        if (nodeInfo.hasOwnProperty(property)) {
+            if (nodeInfo[property].indexOf('-') !== -1) {
+                propertyList = nodeInfo[property].split('-'); //If there's a size range...
+                for (var i=propertyList[0];i<=propertyList[1];i++) {
+                    propertyOptions.push(i);
+                }
+                returnProperty = propertyOptions[Math.floor(Math.random()*(propertyOptions.length))];
+            } else if (nodeInfo[property].indexOf(',') !== -1) {
+                propertyList = nodeInfo[property].split(','); //If there's a size list...
+                for (var i=propertyList[0];i<=propertyList[1];i++) {
+                    propertyOptions.push(i);
+                }
+                returnProperty = propertyOptions[Math.floor(Math.random()*(propertyOptions.length))];
+            } else {
+                returnProperty = nodeInfo[property]; //If the size is just stated
+            }
+        }
+        
+        return returnProperty;
+    }
+    
     this.expandNode = function(node, nodeID, nodeTree) {
     //This function finds the nodeType information for a given node, and then
     //creates child nodes to fill out that type until a given "stop" command is
     //given.
     //TODO: make a less arbitrary "stop expanding" rule than "when you fail twice."
         
-        var shape = require('./lib/shapes/' + node.info.shape + '.js')();
+        var shape = require('./lib/shapes/' + node.info.shape + '.js');
         var notCount = 0;
         var lastFailed = false;
         var count = 0;
@@ -491,57 +521,47 @@ function Grid(x, y) {
         var sizeList = []; //These latter two are for nodes with multiple possible sizes
         var sizeOptions = [];
         
-        if (node.info.hasOwnProperty("size")) {
-            if (node.info.size.indexOf('-') !== -1) {
-                sizeList = node.info.size.split('-'); //If there's a size range...
-                for (var i=sizeList[0];i<=sizeList[1];i++) {
-                    sizeOptions.push(i);
-                }
-                size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
-            } else if (node.info.size.indexOf(',') !== -1) {
-                sizeList = node.info.size.split(','); //If there's a size list...
-                for (var i=sizeList[0];i<=sizeList[1];i++) {
-                    sizeOptions.push(i);
-                }
-                size = sizeOptions[Math.floor(Math.random()*(sizeOptions.length))];
-            } else {
-                size = node.info.size; //If the size is just stated
-            }
-        }
+        //Figure out the size from the size property
+        size = this.getNodePropertyRange(node.info, "size");
+        width = this.getNodePropertyRange(node.info, "width");
+        shape = shape(width);
 
         while ((notCount < 4 && size == 0) || (size > 0 && count < size-1 && notCount < 4)) {
             //If a node's size is infinite, stop when two nodes in a row are off the
             //grid or collide with another node. Otherwise stop at four in a row.
             //TODO: add attribute to shapes to self-govern how many notCount to look
             //for, with 4 as the default.
-            coord = shape(lastFailed);
+            coords = shape(lastFailed);
 
-            if (coord === false) {
+            if (coords === false) {
                 notCount++;
                 lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
                 continue;
             }
-            coord.x = coord.x + node.coords.x;
-            coord.y = coord.y + node.coords.y;
             
-            if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
-                notCount++;
-                lastFailed = true;
-                continue;
-            } else if (this.grid[coord.x]
-              && this.grid[coord.x][coord.y]
-              && !this.grid[coord.x][coord.y].node
-              && this.checkAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
-              ) {
-                nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
-                notCount = 0;
-                count++;
-                lastFailed = false;
-                continue;
-            } else {
-                notCount++;
-                lastFailed = true;
-                continue;
+            for (coord in coords) {
+                coord.x = coord.x + node.coords.x;
+                coord.y = coord.y + node.coords.y;
+                
+                if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
+                    notCount++;
+                    lastFailed = true;
+                    continue;
+                } else if (this.grid[coord.x]
+                  && this.grid[coord.x][coord.y]
+                  && !this.grid[coord.x][coord.y].node
+                  && this.checkAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
+                  ) {
+                    nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
+                    notCount = 0;
+                    count++;
+                    lastFailed = false;
+                    continue;
+                } else {
+                    notCount++;
+                    lastFailed = true;
+                    continue;
+                }
             }
         }
         
