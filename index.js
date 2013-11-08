@@ -152,14 +152,21 @@ function Grid(x, y) {
             }
             this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
         }
-        this.fillEmptyTiles(nodeTree);
+        console.log('Filling remaining tiles.');
+        this.fillEmptyTiles(config, nodeTree);
+        
+        console.log('Done generating grid.');
         
         return this.nodes;
     }
     
-    this.fillEmptyTiles = function(nodeTree) {
+    this.fillEmptyTiles = function(config, nodeTree) {
         //This function recursively calls itself until there are no more
         //empty grid points
+        console.log('\033[2J');
+        var percentRemains = this.grid_unused_hash.length/(config.map.x*config.map.y)*100;
+        console.log('Of ' + (config.map.x*config.map.y) + ' about ' + percentRemains + '% remains');
+        
         var new_point = this.generateCoordsAdjacent();
         var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
         var new_node = this.createNode(new_point, new_type.type, null, nodeTree);
@@ -167,7 +174,7 @@ function Grid(x, y) {
         this.expandNode(this.nodes[new_node], new_node, nodeTree);
         
         if (this.grid_unused_hash.length > 0) {
-            this.fillEmptyTiles(nodeTree);
+            this.fillEmptyTiles(config, nodeTree);
         }
         
     }
