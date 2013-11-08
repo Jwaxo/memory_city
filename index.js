@@ -132,17 +132,17 @@ function Grid(x, y) {
         //variable of influence one can have when creating a new map.
         //TODO: Make the roots "zoning" points, and make many types of buildings
         //require to be next to the same building or touching the root
-         var roots = config.map.roots
-          , root_type = config.map.root_type;
-        for(var i = 0; i < roots; i++) {
+        var roots = config.map.roots
+        for(var i = 0; i < roots.length; i++) {
             var nodesRoot
               , nodesRoad
               , road = {}
               , new_coords = {}
               , possibleDirections;
-            console.log('Generating root.');
+            var new_type = nodeTree.walkTypes(nodeTree.tree.building, this.propertyCheckCallback('zone',roots[i]));
+            console.log('Generating root ' + new_type.type);
             new_coords = this.generateCoords();
-            nodesRoot = this.createNode(new_coords, "school", null, nodeTree);
+            nodesRoot = this.createNode(new_coords, new_type.type, null, nodeTree);
             possibleDirections = this.findEmptyAdjacents(new_coords);
             roadCoords = possibleDirections[Math.floor(Math.random()*(possibleDirections.length))];
             
@@ -270,13 +270,35 @@ function Grid(x, y) {
         return possibleDirections;
     }
     
+    this.propertyCheckCallback = function(property, values) {
+        var that = this;
+        
+        return function(nodeBranch) {
+            var isLegal = false;
+            var requirements = [];
+            
+            if (nodeBranch.hasOwnProperty(property)) {
+                if (nodeBranch[property].indexOf(',')) {
+                    requirements = nodeBranch[property].split(',');
+                } else {
+                    requirements.push(nodeBranch[property]);
+                }
+                for (var i=0;i<requirements.length; i++) {
+                    if (requirements.indexOf(values) > -1) {
+                        isLegal = true;
+                    }
+                }
+            }
+            return isLegal;
+        }
+    }
+    
     this.walkTypesCallback = function(coords) {
         var grid = this.grid;
         var that = this;
         
         return function(nodeBranch) {
-        
-            isLegal = false;
+            var isLegal = false;
         
             if (that.checkAdjacentType(coords, grid, nodeBranch, 'adjacent', 'type', 0, 'all')
                 && that.checkAdjacentType(coords, grid, nodeBranch, 'zone', 'zone', 0, 'one')
