@@ -516,7 +516,7 @@ function Grid(x, y) {
         var notCount = 0;
         var lastFailed = false;
         var count = 0;
-        var coord = {};
+        var coords = [];
         var size = 0;
         var sizeList = []; //These latter two are for nodes with multiple possible sizes
         var sizeOptions = [];
@@ -531,6 +531,7 @@ function Grid(x, y) {
             //grid or collide with another node. Otherwise stop at four in a row.
             //TODO: add attribute to shapes to self-govern how many notCount to look
             //for, with 4 as the default.
+
             coords = shape(lastFailed);
 
             if (coords === false) {
@@ -538,21 +539,20 @@ function Grid(x, y) {
                 lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
                 continue;
             }
-            
-            for (coord in coords) {
-                coord.x = coord.x + node.coords.x;
-                coord.y = coord.y + node.coords.y;
+            for (var i=0;i<coords.length;i++) {
+                coords[i].x = coords[i].x + node.coords.x;
+                coords[i].y = coords[i].y + node.coords.y;
                 
-                if (!this.grid[coord.x] || !this.grid[coord.x][coord.y]) {
+                if (!this.grid[coords[i].x] || !this.grid[coords[i].x][coords[i].y]) {
                     notCount++;
                     lastFailed = true;
                     continue;
-                } else if (this.grid[coord.x]
-                  && this.grid[coord.x][coord.y]
-                  && !this.grid[coord.x][coord.y].node
-                  && this.checkAdjacentType(coord, this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
+                } else if (this.grid[coords[i].x]
+                  && this.grid[coords[i].x][coords[i].y]
+                  && !this.grid[coords[i].x][coords[i].y].node
+                  && this.checkAdjacentType(coords[i], this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
                   ) {
-                    nodesRoad = this.createNode(coord, node.info.type, nodeID, nodeTree);
+                    nodesRoad = this.createNode(coords[i], node.info.type, nodeID, nodeTree);
                     notCount = 0;
                     count++;
                     lastFailed = false;
