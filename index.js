@@ -163,9 +163,9 @@ function Grid(x, y) {
     this.fillEmptyTiles = function(config, nodeTree) {
         //This function recursively calls itself until there are no more
         //empty grid points
-        console.log('\033[2J');
+        //console.log('\033[2J'); //This command clears out the console window
         var percentRemains = this.grid_unused_hash.length/(config.map.x*config.map.y)*100;
-        console.log('Of ' + (config.map.x*config.map.y) + ' about ' + percentRemains + '% remains');
+        console.log('Of ' + (config.map.x*config.map.y) + ' about ' + Math.floor(percentRemains) + '% remains');
         
         var new_point = this.generateCoordsAdjacent();
         var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
@@ -591,6 +591,9 @@ function Grid(x, y) {
                     lastFailed = true;
                     continue;
                 }
+            }
+            if (node.info.shape == 'rectangle') {
+                console.log('creating rectangle. not count is ' + notCount);
             }
         }
         

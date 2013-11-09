@@ -3,6 +3,8 @@
     "parentType" : "building",
     "color" : "ff0000",
     "chance" : "50",
-    "size" : "1-2",
-    "zone" : "R"
+    "size" : "2",
+    "zone" : "R",
+    "shape" : "rectangle",
+    "width" : "2"
 }
