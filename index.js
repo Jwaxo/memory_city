@@ -569,31 +569,35 @@ function Grid(x, y) {
                 continue;
             }
             for (var i=0;i<coords.length;i++) {
+                
+                //If, for whatever reason, it tries to expand to the root, just
+                //ignore that and pretend it succeeded. Might cause a bad loop
+                //problem on poorly-coded shapes.
+                if (coords[i].x === 0 && coords[i].y === 0) {
+                    lastFailed = false;
+                    notCount = 0;
+                    continue;
+                }
+                
                 coords[i].x = coords[i].x + node.coords.x;
                 coords[i].y = coords[i].y + node.coords.y;
                 
                 if (!this.grid[coords[i].x] || !this.grid[coords[i].x][coords[i].y]) {
                     notCount++;
                     lastFailed = true;
-                    continue;
                 } else if (this.grid[coords[i].x]
                   && this.grid[coords[i].x][coords[i].y]
                   && !this.grid[coords[i].x][coords[i].y].node
-                  && this.checkAdjacentType(coords[i], this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all')
+                  && (!node.info.hasOwnProperty('adjacentExpand') || this.checkAdjacentType(coords[i], this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all'))
                   ) {
                     nodesRoad = this.createNode(coords[i], node.info.type, nodeID, nodeTree);
                     notCount = 0;
                     count++;
                     lastFailed = false;
-                    continue;
                 } else {
                     notCount++;
                     lastFailed = true;
-                    continue;
                 }
-            }
-            if (node.info.shape == 'rectangle') {
-                console.log('creating rectangle. not count is ' + notCount);
             }
         }
         
