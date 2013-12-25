@@ -1,5 +1,6 @@
 module.exports = function() {
-
+    //TODO: Set up way to show by zone
+    //TODO: Draw borders based on siblings? Would need bits from threecity
     var seedrandom = require('seed-random');
     var fs = require('fs');
     
