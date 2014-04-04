@@ -5,7 +5,7 @@ var config = require('./config').values,
     "asset_location" : "./examples/shapes", //not used yet
     "render_width" : "1200", //view grid width in pixels
     "render_height" : "800" //view grid height in pixels
-}
+  }
 
 console.log("Config loaded with seed '" + config.seed + "'.");
 
@@ -15,7 +15,7 @@ var GridGenerator = require('./index'),
 var grid = GridGenerator(config);
 var map = new ThreeGrid(grid);
 
-map.renderGred(threeGridConfig);
+map.renderGrid(threeGridConfig);
 
 //The following will be used once we switch back to rendering without a test
 //function. For now we're using beefy, just as threegrid.js would for tests.
