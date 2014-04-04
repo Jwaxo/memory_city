@@ -90,12 +90,10 @@ function Grid(x, y) {
     this.grid_y = y;
     var max_x = this.grid_x;
     var max_y = this.grid_y;
-    
-    this.dontagain = 0;
+
     //Since JS (and, presumably, most languages) can't deal with negative
     //integers for its array keys, we need to double+1 the x and y coords
     //for use in our loops.
-    
     for(var i = 0; i < max_x; i++) {
         this.grid[i] = [];
         for(var j = 0; j < max_y; j++) {
