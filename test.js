@@ -1,12 +1,29 @@
-var config = require('./config').values;
+var config = require('./config').values,
+	threeGridConfig = {
+    "size" : "0", //height/size multiplier if greater than 0
+    "type" : "type", //what property we're calling the "grouper"
+    "asset_location" : "./examples/shapes", //not used yet
+    "render_width" : "1200", //view grid width in pixels
+    "render_height" : "800" //view grid height in pixels
+}
 
 console.log("Config loaded with seed '" + config.seed + "'.");
 
+var GridGenerator = require('./index'),
+	ThreeGrid = require('threegrid');
+
+var grid = GridGenerator(config);
+var map = new ThreeGrid(grid);
+
+map.renderGred(threeGridConfig);
+
+//The following will be used once we switch back to rendering without a test
+//function. For now we're using beefy, just as threegrid.js would for tests.
+
+/*
 var http = require('http');
 var express = require('express');
 var server = express();
-
-var map_generator = require('./index');
 
 server.configure(function() {
     //Begin setting up the server
@@ -25,8 +42,6 @@ server.configure('production', function() {
     console.log('Server running in production mode.');
 });
 
-var map = map_generator(config);
-
 var body = {
     'map' : map
 };
@@ -43,3 +58,4 @@ server.get('/', function (request, response) {
 server.listen(8000);
 
 console.log("Server running at http://127.0.0.1:8000/");
+*/
