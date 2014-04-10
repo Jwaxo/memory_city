@@ -1,4 +1,5 @@
 node_modules/
+nbproject/
 
 #################
 ## Eclipse
@@ -163,3 +164,4 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+/nbproject/private/
