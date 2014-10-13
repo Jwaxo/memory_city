@@ -2,6 +2,10 @@
   "name": "memory_city",
   "version": "0.0.1",
   "description": "A memory game of a randomized, 3D visualized city.",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Jwaxo/memory_city.git"
+  },
   "dependencies": {
     "express": "3.3.8",
     "ejs": "0.8.4",
