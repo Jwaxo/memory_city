@@ -20,6 +20,9 @@ map.renderGrid(threeGridConfig);
 //The following will be used once we switch back to rendering without a test
 //function. For now we're using beefy, just as threegrid.js would for tests.
 
+//The end goal is to run the server and respond with a JSON file of information,
+//which the browserified code will interpret and display in three.js
+
 /*
 var http = require('http');
 var express = require('express');
