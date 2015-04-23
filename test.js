@@ -5,7 +5,7 @@ var config = require('./config').values,
     "asset_location" : "./examples/shapes", //not used yet
     "render_width" : "1200", //view grid width in pixels
     "render_height" : "800" //view grid height in pixels
-  }
+  };
 
 console.log("Config loaded with seed '" + config.seed + "'.");
 
