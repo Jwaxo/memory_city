@@ -1,13 +1,20 @@
 var config = require('./config').values,
+  fs = require('fs'),
 	threeGridConfig = {
     "size" : "0", //height/size multiplier if greater than 0
     "type" : "type", //what property we're calling the "grouper"
     "asset_location" : "./examples/shapes", //not used yet
     "render_width" : "1200", //view grid width in pixels
     "render_height" : "800" //view grid height in pixels
-  }
+  };
 
 console.log("Config loaded with seed '" + config.seed + "'.");
+
+var JSONAutoTree = require('jsonautotree');
+var nodetree = new JSONAutoTree('./lib/nodes/');
+nodetree.automateBranches();
+
+fs.writeFile('./lib/nodes_autotree.json', JSON.stringify(nodetree));
 
 var GridGenerator = require('./index'),
 	ThreeGrid = require('threegrid');
