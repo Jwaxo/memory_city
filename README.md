@@ -32,3 +32,15 @@ These are the various elements that will come into play. These aren't necessaril
         - Other Things
 * Topography
 * Questions
+
+### Testing
+
+As with ThreeGrid, this module is currently setup to be tested with beefy via browserify.
+
+The last time I got it working (which changes as the module is worked on), I did it with the following steps:
+
+1) Install browserify: `npm install browserify`
+2) Install browserify-fs: `npm install browserify-fs`
+3) Install beefy: `npm install -g beefy`
+4) Run the test: `beefy test.js`
+5) Go to the configured beefy page, normally `127.0.0.1:9966`

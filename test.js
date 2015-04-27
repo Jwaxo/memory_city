@@ -16,12 +16,15 @@ nodetree.automateBranches();
 
 fs.writeFile('./lib/nodes_autotree.json', JSON.stringify(nodetree));
 
+// Require the module "factories" we'll be using.
 var GridGenerator = require('./index'),
 	ThreeGrid = require('threegrid');
 
+// Put our config into GridGenerator, which creates our city as a massive ThreeGrid-able object.
 var grid = GridGenerator(config);
+// Then push that grid through ThreeGrid to generate the information for the city visuals.
 var map = new ThreeGrid(grid);
-
+// ...and render it all with three.js (in threegrid.js).
 map.renderGrid(threeGridConfig);
 
 //The following will be used once we switch back to rendering without a test
