@@ -140,9 +140,9 @@ function Grid(x, y) {
       if (roadCoords) {
         console.log('Found no roads, so creating road.');
         nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
-        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree, config.asset_location);
+        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree, config.shapes);
       }
-      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree, config.asset_location);
+      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree, config.shapes);
     }
     console.log('Filling remaining tiles.');
     this.fillEmptyTiles(config, nodeTree);
@@ -163,13 +163,13 @@ function Grid(x, y) {
     var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
     var new_node = this.createNode(new_point, new_type.type, null, nodeTree);
 
-    this.expandNode(this.nodes[new_node], new_node, nodeTree, config.asset_location);
+    this.expandNode(this.nodes[new_node], new_node, nodeTree, config.shapes);
 
     if (this.grid_unused_hash.length > 0) {
       this.fillEmptyTiles(config, nodeTree);
     }
 
-  }
+  };
 
   this.generateCoords = function () {
     //Generates random coordinates based off of a given max x and y pair.
@@ -527,29 +527,25 @@ function Grid(x, y) {
     return returnProperty;
   }
 
-  this.expandNode = function (node, nodeID, nodeTree, asset_location) {
+  this.expandNode = function (node, nodeID, nodeTree, shapes) {
     //This function finds the nodeType information for a given node, and then
     //creates child nodes to fill out that type until a given "stop" command is
     //given.
     //TODO: make a less arbitrary "stop expanding" rule than "when you fail twice."
-    var shape = require('./' + asset_location + '/shapes/' + node.info.shape.toString() + '.js');
-    // ^ THIS DOES NOT WORK.
-    // YET, MANUALLY ENTERING "./lib/shapes/line.js" DOES WORK.
-    // WHY?
     var notCount = 0;
     var lastFailed = false;
     var count = 0;
     var coords = [];
-    var size = 0;
+    var size = this.getNodePropertyRange(node.info, "size");
+    var width = this.getNodePropertyRange(node.info, "width");
+    var shape = shapes[node.info.shape](width);
     var sizeList = []; //These latter two are for nodes with multiple possible sizes
     var sizeOptions = [];
 
-    //Figure out the size from the size property
-    size = this.getNodePropertyRange(node.info, "size");
-    width = this.getNodePropertyRange(node.info, "width");
-    shape = shape(width);
+    console.log('Creating node!');
 
     while ((notCount < 4 && size == 0) || (size > 0 && count < size - 1 && notCount < 4)) {
+      console.log('While loop ' + count);
       //If a node's size is infinite, stop when two nodes in a row are off the
       //grid or collide with another node. Otherwise stop at four in a row.
       //TODO: add attribute to shapes to self-govern how many notCount to look
