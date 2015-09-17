@@ -2,9 +2,6 @@ module.exports = function () {
   //TODO: Set up way to show by zone
   //TODO: Draw borders based on siblings? Would need bits from threecity
   var seedrandom = require('seed-random');
-  var fs = require('fs');
-
-  var JSONAutoTree = require('jsonautotree');
 
   //Nodes are any rendered occupant of a tile, ideally entourage, buildings,
   //or roads. They define what a given tile may be. They are read dynamically
@@ -48,20 +45,9 @@ module.exports = function () {
   //    Shapes will be the most important part of the algorithm, eventually.
   //root - a referenced node that they were expanded from.
 
-  var nodeTree = {};
-
-  if (fs.exists('./lib/nodes_autotree.json')) {
-    nodeTreeJSON = require('lib/nodes_autotree.json');
-    nodeTree.branchesFromCache(nodeTreeJSON);
-  }
-  else {
-    console.log('nodeTree not found! Please generate nodes_autotree.json file with jsonautotree.');
-  }
-
   console.log('Map generator ready.');
 
-  return function (config) {
-    console.log('Config received');
+  return function (config, nodeTree) {
     if (config.seed) {
       seedrandom(config.seed, true); //If a seed is set, replace Math.random()
       console.log('Generating map from seed "' + config.seed + '".');
@@ -130,7 +116,7 @@ function Grid(x, y) {
     }
     //TODO: log a percentage left to generate
     //console.log('Unused hash regenerated, unused point count is ' + this.grid_unused_hash.length);
-  }
+  };
 
   this.createRoots = function (config, nodeTree) {
     //Roots are what I call the "basic" building blocks, mostly just another
@@ -152,10 +138,11 @@ function Grid(x, y) {
       roadCoords = possibleDirections[Math.floor(Math.random() * (possibleDirections.length))];
 
       if (roadCoords) {
+        console.log('Found no roads, so creating road.');
         nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
-        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree);
+        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree, config.asset_location);
       }
-      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree);
+      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree, config.asset_location);
     }
     console.log('Filling remaining tiles.');
     this.fillEmptyTiles(config, nodeTree);
@@ -163,7 +150,7 @@ function Grid(x, y) {
     console.log('Done generating grid.');
 
     return this.nodes;
-  }
+  };
 
   this.fillEmptyTiles = function (config, nodeTree) {
     //This function recursively calls itself until there are no more
@@ -176,7 +163,7 @@ function Grid(x, y) {
     var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
     var new_node = this.createNode(new_point, new_type.type, null, nodeTree);
 
-    this.expandNode(this.nodes[new_node], new_node, nodeTree);
+    this.expandNode(this.nodes[new_node], new_node, nodeTree, config.asset_location);
 
     if (this.grid_unused_hash.length > 0) {
       this.fillEmptyTiles(config, nodeTree);
@@ -540,13 +527,15 @@ function Grid(x, y) {
     return returnProperty;
   }
 
-  this.expandNode = function (node, nodeID, nodeTree) {
+  this.expandNode = function (node, nodeID, nodeTree, asset_location) {
     //This function finds the nodeType information for a given node, and then
     //creates child nodes to fill out that type until a given "stop" command is
     //given.
     //TODO: make a less arbitrary "stop expanding" rule than "when you fail twice."
-
-    var shape = require('./lib/shapes/' + node.info.shape + '.js');
+    var shape = require('./' + asset_location + '/shapes/' + node.info.shape.toString() + '.js');
+    // ^ THIS DOES NOT WORK.
+    // YET, MANUALLY ENTERING "./lib/shapes/line.js" DOES WORK.
+    // WHY?
     var notCount = 0;
     var lastFailed = false;
     var count = 0;

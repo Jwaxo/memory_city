@@ -1,3 +1,7 @@
+
+// Run as 'node test.js' first to generate this tree.
+// Then run with 'beefy test.js' to use the tree.
+
 var config = require('./config').values,
   fs = require('fs'),
 	threeGridConfig = {
@@ -11,17 +15,35 @@ var config = require('./config').values,
 console.log("Config loaded with seed '" + config.seed + "'.");
 
 var JSONAutoTree = require('jsonautotree');
-var nodetree = new JSONAutoTree('./lib/nodes/');
-nodetree.automateBranches();
-
-fs.writeFile('./lib/nodes_autotree.json', JSON.stringify(nodetree));
+var nodetree = new JSONAutoTree('./../../' + config.asset_location + '/nodes/');
+// NOTE: THIS IS NOT WRITING THE FILE PROPERLY.
+// ANYTHING CURRENTLY IN nodes_autotree.json IS JUST PASTED BY ME.
+if (!nodetree) {
+  nodetree.automateBranches();
+  var autotree = JSON.stringify(nodetree);
+  fs.writeFile('./lib/nodes_autotree.json', autotree, function (error) {
+    if (error) {
+      console.log('error is ' + error);
+      throw error;
+    }
+    else {
+      console.log('Autotree saved.');
+    }
+  });
+}
 
 // Require the module "factories" we'll be using.
 var GridGenerator = require('./index'),
 	ThreeGrid = require('threegrid');
 
+var nodeTree = require('jsonautotree')('./lib/nodes');
+
+var nodeTreeJSON = require('./lib/nodes_autotree.json');
+console.log('Loaded tree from file.');
+nodeTree.branchesFromCache(nodeTreeJSON);
+
 // Put our config into GridGenerator, which creates our city as a massive ThreeGrid-able object.
-var grid = GridGenerator(config);
+var grid = GridGenerator(config, nodeTree);
 // Then push that grid through ThreeGrid to generate the information for the city visuals.
 var map = new ThreeGrid(grid);
 // ...and render it all with three.js (in threegrid.js).
