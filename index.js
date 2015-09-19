@@ -140,9 +140,10 @@ function Grid(x, y) {
       if (roadCoords) {
         console.log('Found no roads, so creating road.');
         nodesRoad = this.createNode(roadCoords, "road", null, nodeTree);
-        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree, config.shapes);
+        this.expandNode(this.nodes[nodesRoad], nodesRoad, nodeTree, config.shapes[this.nodes[nodesRoad].info.shape]);
       }
-      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree, config.shapes);
+      console.log('Creating root.');
+      this.expandNode(this.nodes[nodesRoot], nodesRoot, nodeTree, config.shapes[this.nodes[nodesRoad].info.shape]);
     }
     console.log('Filling remaining tiles.');
     this.fillEmptyTiles(config, nodeTree);
@@ -162,8 +163,9 @@ function Grid(x, y) {
     var new_point = this.generateCoordsAdjacent();
     var new_type = nodeTree.walkTypes(nodeTree.tree, this.walkTypesCallback(new_point));
     var new_node = this.createNode(new_point, new_type.type, null, nodeTree);
+    var shape_function = config.shapes[this.nodes[new_node].info.shape];
 
-    this.expandNode(this.nodes[new_node], new_node, nodeTree, config.shapes);
+    this.expandNode(this.nodes[new_node], new_node, nodeTree, shape_function);
 
     if (this.grid_unused_hash.length > 0) {
       this.fillEmptyTiles(config, nodeTree);
@@ -192,7 +194,7 @@ function Grid(x, y) {
     };
 
     return coords;
-  }
+  };
 
   this.generateCoordsAdjacent = function () {
     //Generates random coordinates of a grid point next to an occupied point.
@@ -215,7 +217,7 @@ function Grid(x, y) {
     };
 
     return coords;
-  }
+  };
 
   this.findEmptyAdjacents = function (coords) {
     //Finds if there is an empty space around a node in all directions
@@ -267,7 +269,7 @@ function Grid(x, y) {
     }
 
     return possibleDirections;
-  }
+  };
 
   this.propertyCheckCallback = function (property, values) {
     var that = this;
@@ -290,7 +292,7 @@ function Grid(x, y) {
       }
       return isLegal;
     }
-  }
+  };
 
   this.walkTypesCallback = function (coords) {
     var grid = this.grid;
@@ -307,7 +309,7 @@ function Grid(x, y) {
 
       return isLegal;
     }
-  }
+  };
 
 
   this.checkAdjacentType = function (coords, grid, nodeBranch, property, test, parentID, comparison) {
@@ -455,7 +457,7 @@ function Grid(x, y) {
     }
 
     return isLegal;
-  }
+  };
 
 
   this.createNode = function (coords, nodeType, parentID, nodeTree) {
@@ -466,7 +468,7 @@ function Grid(x, y) {
       coords: coords,
       grid_ref: this.grid[coords.x][coords.y],
       info: nodeTree.getNode(nodeType)
-    }
+    };
     var nodeAdjacents = this.findEmptyAdjacents(coords);
 
     node.nodeID = this.nodes.push(node) - 1; //Make our this.nodes reference complete
@@ -498,7 +500,7 @@ function Grid(x, y) {
     this.regenerateUnused();
 
     return node.nodeID;
-  }
+  };
 
   this.getNodePropertyRange = function (nodeInfo, property) {
 
@@ -525,9 +527,9 @@ function Grid(x, y) {
     }
 
     return returnProperty;
-  }
+  };
 
-  this.expandNode = function (node, nodeID, nodeTree, shapes) {
+  this.expandNode = function (node, nodeID, nodeTree, shape_function) {
     //This function finds the nodeType information for a given node, and then
     //creates child nodes to fill out that type until a given "stop" command is
     //given.
@@ -538,9 +540,11 @@ function Grid(x, y) {
     var coords = [];
     var size = this.getNodePropertyRange(node.info, "size");
     var width = this.getNodePropertyRange(node.info, "width");
-    var shape = shapes[node.info.shape](width);
+    var shape = shape_function(width);
     var sizeList = []; //These latter two are for nodes with multiple possible sizes
     var sizeOptions = [];
+
+    console.log(typeof shape);
 
     console.log('Creating node!');
 
@@ -554,16 +558,18 @@ function Grid(x, y) {
       coords = shape(lastFailed);
 
       if (coords === false) {
+        console.log('Found invalid direction, moving on.');
         notCount++;
-        lastFailed = false; //We can't let this be true since "false" indicates it was not added to the success list.
+        lastFailed = false; // We can't let this be true since technically this is more serious a problem than some other failure.
         continue;
       }
       for (var i = 0; i < coords.length; i++) {
 
-        //If, for whatever reason, it tries to expand to the root, just
-        //ignore that and pretend it succeeded. Might cause a bad loop
-        //problem on poorly-coded shapes.
+        // If, for whatever reason, it tries to expand through the root, just
+        // ignore that and pretend it succeeded. Might cause a bad loop
+        // problem on poorly-coded shapes.
         if (coords[i].x === 0 && coords[i].y === 0) {
+          console.log('Trying to expand into the root, failing.');
           lastFailed = false;
           notCount = 0;
           continue;
@@ -573,18 +579,22 @@ function Grid(x, y) {
         coords[i].y = coords[i].y + node.coords.y;
 
         if (!this.grid[coords[i].x] || !this.grid[coords[i].x][coords[i].y]) {
+          console.log('Tried to expand off of the grid.');
           notCount++;
           lastFailed = true;
-        } else if (this.grid[coords[i].x]
+        }
+        else if (this.grid[coords[i].x]
           && this.grid[coords[i].x][coords[i].y]
           && !this.grid[coords[i].x][coords[i].y].node
           && (!node.info.hasOwnProperty('adjacentExpand') || this.checkAdjacentType(coords[i], this.grid, node.info, 'adjacentExpand', 'type', nodeID, 'all'))
         ) {
+          console.log('Successfully found place to expand.');
           nodesRoad = this.createNode(coords[i], node.info.type, nodeID, nodeTree);
           notCount = 0;
           count++;
           lastFailed = false;
         } else {
+          console.log('Something failed, not adding a node.')
           notCount++;
           lastFailed = true;
         }
