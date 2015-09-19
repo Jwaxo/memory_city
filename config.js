@@ -2,8 +2,8 @@ exports.values = {
 
   seed: 'Fill it ALL with adjacency.',
   map: {
-    x: 5, //Highest maximum value of X. The grid will go from 0 to x
-    y: 5, //Same as above for y
+    x: 10, //Highest maximum value of X. The grid will go from 0 to x
+    y: 10, //Same as above for y
     roots: ['R','I','C'] //Determines initial nodes created based on zone type; also makes initial roads
   },
   shapes: {

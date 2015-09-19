@@ -608,7 +608,7 @@ function Grid(x, y) {
         current_node = this.grid[i][j].node;
         threeGrid[i][j] = {
           'type': current_node.info.type,
-          'color': current_node.info.color,
+          'color': Number('0x' + current_node.info.color),
           'id': current_node.nodeID
         };
         if (current_node.parentID !== null) {
