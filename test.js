@@ -45,7 +45,9 @@ nodeTree.branchesFromCache(nodeTreeJSON);
 // Put our config into GridGenerator, which creates our city as a massive ThreeGrid-able object.
 var grid = GridGenerator(config, nodeTree);
 // Then push that grid through ThreeGrid to generate the information for the city visuals.
-var map = new ThreeGrid(grid);
+
+var map = new ThreeGrid(grid.threeGrid);
+//console.log(map);
 // ...and render it all with three.js (in threegrid.js).
 map.renderGrid(threeGridConfig);
 

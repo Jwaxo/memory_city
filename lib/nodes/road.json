@@ -1,6 +1,6 @@
 {
     "type" : "road",
-    "color" : "333333",
+    "color" : "0x333333",
     "chance" : "30",
     "width" : "2",
     "shape" : "line",

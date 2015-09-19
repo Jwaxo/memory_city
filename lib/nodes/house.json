@@ -1,7 +1,7 @@
 {
     "type" : "house",
     "parentType" : "building",
-    "color" : "ff0000",
+    "color" : "0xFF0000",
     "chance" : "50",
     "size" : "4",
     "zone" : "R",

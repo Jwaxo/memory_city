@@ -61,7 +61,8 @@ module.exports = function () {
 
     var map = {
       'grid': grid.grid,
-      'nodes': grid.createRoots(config, nodeTree)
+      'nodes': grid.createRoots(config, nodeTree),
+      'threeGrid' : grid.threeGridify()
     };
     return map;
 
@@ -544,12 +545,7 @@ function Grid(x, y) {
     var sizeList = []; //These latter two are for nodes with multiple possible sizes
     var sizeOptions = [];
 
-    console.log(typeof shape);
-
-    console.log('Creating node!');
-
     while ((notCount < 4 && size == 0) || (size > 0 && count < size - 1 && notCount < 4)) {
-      console.log('While loop ' + count);
       //If a node's size is infinite, stop when two nodes in a row are off the
       //grid or collide with another node. Otherwise stop at four in a row.
       //TODO: add attribute to shapes to self-govern how many notCount to look
@@ -594,13 +590,34 @@ function Grid(x, y) {
           count++;
           lastFailed = false;
         } else {
-          console.log('Something failed, not adding a node.')
+          console.log('Something failed, not adding a node.');
           notCount++;
           lastFailed = true;
         }
       }
     }
 
-  }
+  };
+  this.threeGridify = function () {
+    var threeGrid = [];
+    var current_node = {};
+
+    for (var i = 0; i < this.grid.length; i++) {
+      threeGrid[i] = [];
+      for (var j = 0; j < this.grid[i].length; j++) {
+        current_node = this.grid[i][j].node;
+        threeGrid[i][j] = {
+          'type': current_node.info.type,
+          'color': current_node.info.color,
+          'id': current_node.nodeID
+        };
+        if (current_node.parentID !== null) {
+          threeGrid[i][j].parentid = current_node.parentID;
+        }
+      }
+    }
+    console.log(threeGrid);
+    return threeGrid;
+  };
 
 }
