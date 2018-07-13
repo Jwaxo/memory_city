@@ -13,6 +13,6 @@
     "express": "3.3.8",
     "jsonautotree": "0.0.x",
     "seed-random": "1.0.1",
-    "threegrid": "0.0.2"
+    "threegrid": "0.0.3"
   }
 }
